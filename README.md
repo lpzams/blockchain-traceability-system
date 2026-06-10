@@ -486,7 +486,7 @@ blockchain-traceability-system/
 
 ## 📞 联系方式
 
-- **项目作者**: 泽泽
+- **项目作者**: lapz_ams
 - **GitHub**: [@lpzams](https://github.com/lpzams)
 - **项目主页**: [blockchain-traceability-system](https://github.com/lpzams/blockchain-traceability-system)
 
@@ -499,7 +499,7 @@ blockchain-traceability-system/
 ```
 MIT License
 
-Copyright (c) 2026 泽泽
+Copyright (c) 2026 lapz_ams
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software")...
@@ -532,7 +532,7 @@ of this software and associated documentation files (the "Software")...
 
 ### ⭐ 如果这个项目对您有帮助，请给一个星标！
 
-**Made with ❤️ by 泽泽**
+**Made with ❤️ by lapz_ams**
 
 **© 2026 Blockchain Traceability System. All Rights Reserved.**
 
