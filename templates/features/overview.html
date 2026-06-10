@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+
+{% block title %}区块链高级功能{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-crown"></i> 区块链高级功能</h2>
+            <p class="text-muted">真正区别于其他项目的核心功能模块</p>
+        </div>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+
+    <!-- 功能卡片 -->
+    <div class="row g-4">
+        <!-- 1. 产品认证证书 -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 feature-card">
+                <div class="card-body">
+                    <div class="feature-icon text-primary mb-3">
+                        <i class="fas fa-certificate"></i>
+                    </div>
+                    <h5 class="card-title">产品认证证书</h5>
+                    <p class="card-text text-muted">
+                        为每个产品生成不可篡改的区块链认证证书，包含完整的制造信息和区块哈希。支持证书真伪验证。
+                    </p>
+                    <div class="feature-highlights">
+                        <small class="badge bg-info">SHA256加密</small>
+                        <small class="badge bg-info">不可篡改</small>
+                        <small class="badge bg-info">防伪验证</small>
+                    </div>
+                </div>
+                <div class="card-footer bg-light">
+                    <a href="#" class="btn btn-sm btn-primary" onclick="showCertificateModal()">
+                        <i class="fas fa-key"></i> 输入ID或批次号查看
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 防伪验证码 -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 feature-card">
+                <div class="card-body">
+                    <div class="feature-icon text-success mb-3">
+                        <i class="fas fa-qrcode"></i>
+                    </div>
+                    <h5 class="card-title">防伪验证码</h5>
+                    <p class="card-text text-muted">
+                        生成多层加密的防伪验证码和二维码，消费者可扫描验证产品真伪，防止仿冒品进入市场。
+                    </p>
+                    <div class="feature-highlights">
+                        <small class="badge bg-success">多层哈希</small>
+                        <small class="badge bg-success">二维码</small>
+                        <small class="badge bg-success">消费者认证</small>
+                    </div>
+                </div>
+                <div class="card-footer bg-light">
+                    <a href="#" class="btn btn-sm btn-success" onclick="showCounterfeitModal()">
+                        <i class="fas fa-shield-alt"></i> 输入ID或批次号查看
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. 批次管理 -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 feature-card">
+                <div class="card-body">
+                    <div class="feature-icon text-warning mb-3">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                    <h5 class="card-title">批次管理分析</h5>
+                    <p class="card-text text-muted">
+                        追踪同一批次的所有产品，进行质量统计、风险评估和自动化分析，支持批次级别的决策。
+                    </p>
+                    <div class="feature-highlights">
+                        <small class="badge bg-warning">质量统计</small>
+                        <small class="badge bg-warning">风险评分</small>
+                        <small class="badge bg-warning">自动分析</small>
+                    </div>
+                </div>
+                <div class="card-footer bg-light">
+                    <a href="#" class="btn btn-sm btn-warning" onclick="showBatchModal()">
+                        <i class="fas fa-boxes"></i> 批次分析
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. 链完整性验证 -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 feature-card">
+                <div class="card-body">
+                    <div class="feature-icon text-danger mb-3">
+                        <i class="fas fa-link"></i>
+                    </div>
+                    <h5 class="card-title">链完整性验证</h5>
+                    <p class="card-text text-muted">
+                        验证产品溯源链的逻辑连贯性，检测所有权转移、质检流程、物流信息的连续性，计算完整性指数。
+                    </p>
+                    <div class="feature-highlights">
+                        <small class="badge bg-danger">连续性检查</small>
+                        <small class="badge bg-danger">完整性评分</small>
+                        <small class="badge bg-danger">异常检测</small>
+                    </div>
+                </div>
+                <div class="card-footer bg-light">
+                    <a href="#" class="btn btn-sm btn-danger" onclick="showIntegrityModal()">
+                        <i class="fas fa-check-circle"></i> 输入ID或批次号验证
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. 智能合约 -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 feature-card">
+                <div class="card-body">
+                    <div class="feature-icon text-info mb-3">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                    <h5 class="card-title">供应链智能合约</h5>
+                    <p class="card-text text-muted">
+                        自动执行供应链交易规则，验证产品所有权，管理交易条款，支持多方协议。
+                    </p>
+                    <div class="feature-highlights">
+                        <small class="badge bg-info">自动执行</small>
+                        <small class="badge bg-info">所有权验证</small>
+                        <small class="badge bg-info">多方协议</small>
+                    </div>
+                </div>
+                <div class="card-footer bg-light">
+                    <a href="{{ url_for('blockchain_features.smart_contracts') }}" class="btn btn-sm btn-info">
+                        <i class="fas fa-code"></i> 创建智能合约
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. 系统统计 -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 feature-card">
+                <div class="card-body">
+                    <div class="feature-icon text-secondary mb-3">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                    <h5 class="card-title">系统统计</h5>
+                    <p class="card-text text-muted">
+                        产品总数：<strong>{{ total_products }}</strong><br>
+                        批次总数：<strong>{{ total_batches }}</strong>
+                    </p>
+                    <div class="feature-highlights">
+                        <small class="badge bg-secondary">实时统计</small>
+                        <small class="badge bg-secondary">趋势分析</small>
+                    </div>
+                </div>
+                <div class="card-footer bg-light">
+                    <span class="text-muted small">数据已同步</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 最近产品 -->
+    <div class="row mt-5">
+        <div class="col-md-12">
+            <h4 class="mb-3">最近注册的产品</h4>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>产品名称</th>
+                            <th>产品ID</th>
+                            <th>批次号</th>
+                            <th>注册时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if recent_products %}
+                            {% for product in recent_products %}
+                            <tr>
+                                <td>{{ product.name }}</td>
+                                <td><code>{{ product.product_id[:16] }}...</code></td>
+                                <td>{{ product.batch_number }}</td>
+                                <td>{{ product.created_at[:10] }}</td>
+                                <td>
+                                    <a href="{{ url_for('blockchain_features.chain_integrity', identifier=product.product_id) }}"
+                                       class="btn btn-xs btn-primary">
+                                        <i class="fas fa-check"></i> 验证
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">暂无产品</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-2">
+                <a href="{{ url_for('blockchain_features.products_list') }}" class="btn btn-info btn-sm">
+                    <i class="fas fa-list"></i> 查看所有产品列表
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.feature-card {
+    transition: all 0.3s ease;
+    border: 1px solid #e0e0e0;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+}
+
+.feature-icon {
+    font-size: 32px;
+}
+
+.feature-highlights {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.feature-highlights .badge {
+    font-size: 11px;
+    padding: 4px 6px;
+}
+</style>
+
+<script>
+function showCertificateModal() {
+    const productId = prompt('输入产品ID或批次号:');
+    if (productId) {
+        window.location.href = `{{ url_for('blockchain_features.certificate', identifier='') }}${productId}`;
+    }
+}
+
+function showCounterfeitModal() {
+    const productId = prompt('输入产品ID或批次号:');
+    if (productId) {
+        window.location.href = `{{ url_for('blockchain_features.anti_counterfeit', identifier='') }}${productId}`;
+    }
+}
+
+function showBatchModal() {
+    const batchNumber = prompt('输入批次号:');
+    if (batchNumber) {
+        window.location.href = `{{ url_for('blockchain_features.batch_management', batch_number='') }}${batchNumber}`;
+    }
+}
+
+function showIntegrityModal() {
+    const productId = prompt('输入产品ID或批次号:');
+    if (productId) {
+        window.location.href = `{{ url_for('blockchain_features.chain_integrity', identifier='') }}${productId}`;
+    }
+}
+</script>
+{% endblock %}

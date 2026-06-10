@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}链完整性验证{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-md-10 offset-md-1">
+            <h2 class="mb-4">
+                <i class="fas fa-link"></i> 区块链溯源链完整性验证
+            </h2>
+
+            {% if error %}
+            <div class="alert alert-danger">{{ error }}</div>
+            {% endif %}
+
+            {% if integrity %}
+            <div class="row">
+                <!-- 链完整性 -->
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header {% if integrity.chain_valid %}bg-success{% else %}bg-danger{% endif %} text-white">
+                            <h5 class="mb-0">溯源链完整性检验</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-4">
+                                <p><strong>产品ID：</strong><br>
+                                <code>{{ integrity.product_id[:16] }}...</code></p>
+                            </div>
+
+                            <div class="mb-4">
+                                <p><strong>总事件数：</strong> {{ integrity.total_events }}</p>
+                            </div>
+
+                            <!-- 完整性得分 -->
+                            <div class="mb-4">
+                                <p><strong>链完整性得分：</strong></p>
+                                <div class="progress" style="height: 30px;">
+                                    <div class="progress-bar {% if integrity.integrity_score >= 80 %}bg-success{% elif integrity.integrity_score >= 60 %}bg-warning{% else %}bg-danger{% endif %}"
+                                         role="progressbar"
+                                         style="width: {{ integrity.integrity_score }}%"
+                                         aria-valuenow="{{ integrity.integrity_score }}"
+                                         aria-valuemin="0"
+                                         aria-valuemax="100">
+                                        {{ integrity.integrity_score }}/100
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 验证状态 -->
+                            <div class="mb-4">
+                                <p><strong>链有效性：</strong></p>
+                                {% if integrity.chain_valid %}
+                                <span class="badge bg-success">✓ 有效</span>
+                                <p class="text-muted mt-2">溯源链逻辑连贯，所有事件记录完整</p>
+                                {% else %}
+                                <span class="badge bg-danger">✗ 无效</span>
+                                <p class="text-muted mt-2">溯源链存在逻辑断裂，请检查事件记录</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 溯源完整性 -->
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">溯源完整性指数</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-4">
+                                <p><strong>完整性评分：</strong></p>
+                                <div class="progress" style="height: 30px;">
+                                    <div class="progress-bar bg-primary"
+                                         role="progressbar"
+                                         style="width: {{ completeness.completeness_score }}%"
+                                         aria-valuenow="{{ completeness.completeness_score }}"
+                                         aria-valuemin="0"
+                                         aria-valuemax="100">
+                                        {{ completeness.completeness_score }}/100
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <h6>溯源组件检查</h6>
+                                <ul class="list-unstyled">
+                                    <li>
+                                        {% if completeness.has_registration %}
+                                        <i class="fas fa-check-circle text-success"></i>
+                                        {% else %}
+                                        <i class="fas fa-times-circle text-danger"></i>
+                                        {% endif %}
+                                        产品注册记录
+                                    </li>
+                                    <li>
+                                        {% if completeness.has_quality_check %}
+                                        <i class="fas fa-check-circle text-success"></i>
+                                        {% else %}
+                                        <i class="fas fa-times-circle text-danger"></i>
+                                        {% endif %}
+                                        质检信息
+                                    </li>
+                                    <li>
+                                        {% if completeness.has_transfer_records %}
+                                        <i class="fas fa-check-circle text-success"></i>
+                                        {% else %}
+                                        <i class="fas fa-times-circle text-danger"></i>
+                                        {% endif %}
+                                        转移记录
+                                    </li>
+                                    <li>
+                                        {% if completeness.has_logistics_info %}
+                                        <i class="fas fa-check-circle text-success"></i>
+                                        {% else %}
+                                        <i class="fas fa-times-circle text-danger"></i>
+                                        {% endif %}
+                                        物流信息
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div class="alert alert-info">
+                                <strong>{{ completeness.description }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 问题检测 -->
+            {% if integrity.issues|length > 0 %}
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card alert-warning">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0"><i class="fas fa-exclamation-triangle"></i> 检测到的问题</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul>
+                                {% for issue in integrity.issues %}
+                                <li class="mb-2">{{ issue }}</li>
+                                {% endfor %}
+                            </ul>
+                            <p class="text-muted mb-0">建议检查上述问题并修正相关事件记录</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- 验证说明 -->
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-info-circle"></i> 验证说明</h5>
+                        </div>
+                        <div class="card-body">
+                            <h6>完整性检查项</h6>
+                            <ul>
+                                <li><strong>所有权连续性：</strong>验证产品转移时所有权转移是否连续，不存在断裂</li>
+                                <li><strong>事件流程：</strong>检查产品注册、质检、转移、物流等关键环节的记录</li>
+                                <li><strong>时间序列：</strong>确保所有事件按时间顺序排列</li>
+                                <li><strong>数据完整性：</strong>每个事件都包含必要的参与者和信息</li>
+                            </ul>
+
+                            <h6 class="mt-3">评分标准</h6>
+                            <table class="table table-sm">
+                                <tbody>
+                                    <tr>
+                                        <td>链有效 & 完整性100%</td>
+                                        <td><span class="badge bg-success">优秀</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>链有效 & 完整性75%+</td>
+                                        <td><span class="badge bg-info">良好</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>链有效 & 完整性60%+</td>
+                                        <td><span class="badge bg-warning">一般</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>链无效 或 完整性<60%</td>
+                                        <td><span class="badge bg-danger">警告</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <h6 class="mt-3">改进建议</h6>
+                            <ul>
+                                <li>确保产品所有权转移都被正确记录</li>
+                                <li>为产品补充缺失的质检信息</li>
+                                <li>记录完整的物流信息以追踪产品流向</li>
+                                <li>定期验证链完整性，及时发现和修正问题</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-inbox"></i> 请输入有效的产品ID进行链完整性验证
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

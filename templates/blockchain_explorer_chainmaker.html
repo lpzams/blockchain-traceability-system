@@ -1,0 +1,301 @@
+{% extends "base.html" %}
+
+{% block title %}长安链产品溯源浏览器{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- 页面标题 -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h2><i class="fas fa-cube"></i> 长安链产品溯源浏览器</h2>
+                    <p class="text-muted mb-0">基于长安链（ChainMaker）的产品供应链追溯系统</p>
+                </div>
+                <div>
+                    {% if blockchain_info and blockchain_info.is_connected %}
+                    <span class="badge bg-success" style="font-size: 14px;">
+                        <i class="fas fa-circle"></i> 链已连接
+                    </span>
+                    {% else %}
+                    <span class="badge bg-danger" style="font-size: 14px;">
+                        <i class="fas fa-circle"></i> 链未连接
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if blockchain_info and blockchain_info.is_connected %}
+
+    <!-- 链信息卡片 -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-cube text-primary" style="font-size: 20px;"></i>
+                        <h6 class="mb-0 ms-2">链高度</h6>
+                    </div>
+                    <h3 class="text-primary mb-0">{{ blockchain_info.height }}</h3>
+                    <small class="text-muted">区块总数</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-exchange-alt text-success" style="font-size: 20px;"></i>
+                        <h6 class="mb-0 ms-2">交易总数</h6>
+                    </div>
+                    <h3 class="text-success mb-0">{{ blockchain_info.tx_count }}</h3>
+                    <small class="text-muted">已确认交易</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-server text-info" style="font-size: 20px;"></i>
+                        <h6 class="mb-0 ms-2">节点数</h6>
+                    </div>
+                    <h3 class="text-info mb-0">{{ blockchain_info.node_count }}</h3>
+                    <small class="text-muted">验证节点</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-handshake text-warning" style="font-size: 20px;"></i>
+                        <h6 class="mb-0 ms-2">共识类型</h6>
+                    </div>
+                    <h3 class="text-warning mb-0">{{ blockchain_info.chain_info.consensus_type }}</h3>
+                    <small class="text-muted">RAFT共识</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 系统信息 -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light border-bottom">
+                    <h5 class="mb-0"><i class="fas fa-cogs"></i> 系统状态</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <p class="text-muted mb-1"><i class="fas fa-cpu"></i> CPU占用</p>
+                            <h6>{{ blockchain_info.system_status.cpu_usage }}</h6>
+                        </div>
+                        <div class="col-md-3">
+                            <p class="text-muted mb-1"><i class="fas fa-memory"></i> 内存占用</p>
+                            <h6>{{ blockchain_info.system_status.memory_usage }}</h6>
+                        </div>
+                        <div class="col-md-3">
+                            <p class="text-muted mb-1"><i class="fas fa-code"></i> Goroutine数</p>
+                            <h6>{{ blockchain_info.system_status.goroutine_count }}</h6>
+                        </div>
+                        <div class="col-md-3">
+                            <p class="text-muted mb-1"><i class="fas fa-hourglass"></i> 待处理交易</p>
+                            <h6>{{ blockchain_info.system_status.pending_tx_count }}</h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 区块列表 -->
+    <div class="row">
+        <div class="col-md-12">
+            <h5 class="mb-3"><i class="fas fa-list"></i> 最新区块</h5>
+
+            {% for block in blocks %}
+            <div class="card mb-3 border-0 shadow-sm">
+                <div class="card-header bg-gradient text-white">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h6 class="mb-0">
+                                <i class="fas fa-cube"></i> 区块 #{{ block.height }}
+                                {% if block.product_name %}
+                                <span class="ms-2 badge bg-light text-dark">{{ block.product_name }}</span>
+                                {% endif %}
+                            </h6>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <small class="text-white-50">
+                                <i class="fas fa-exchange-alt"></i> {{ block.tx_count }} 个交易
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="row">
+                        <!-- 区块基本信息 -->
+                        <div class="col-md-6">
+                            <h6 class="text-primary mb-3"><i class="fas fa-info-circle"></i> 区块信息</h6>
+                            <dl class="row" style="font-size: 14px;">
+                                <dt class="col-sm-4">高度:</dt>
+                                <dd class="col-sm-8">{{ block.height }}</dd>
+
+                                <dt class="col-sm-4">时间戳:</dt>
+                                <dd class="col-sm-8">{{ block.timestamp }}</dd>
+
+                                {% if block.proposer %}
+                                <dt class="col-sm-4">提议者:</dt>
+                                <dd class="col-sm-8"><code>{{ block.proposer }}</code></dd>
+                                {% endif %}
+
+                                {% if block.product_name %}
+                                <dt class="col-sm-4">产品:</dt>
+                                <dd class="col-sm-8">{{ block.product_name }}</dd>
+
+                                <dt class="col-sm-4">批次号:</dt>
+                                <dd class="col-sm-8">{{ block.batch_number }}</dd>
+
+                                <dt class="col-sm-4">生产商:</dt>
+                                <dd class="col-sm-8">{{ block.manufacturer }}</dd>
+
+                                <dt class="col-sm-4">当前所有者:</dt>
+                                <dd class="col-sm-8">{{ block.current_owner }}</dd>
+                                {% endif %}
+                            </dl>
+                        </div>
+
+                        <!-- 哈希值 -->
+                        <div class="col-md-6">
+                            <h6 class="text-primary mb-3"><i class="fas fa-fingerprint"></i> 哈希信息</h6>
+                            <div class="mb-3">
+                                <small class="text-muted d-block mb-1">当前区块哈希</small>
+                                <div class="input-group input-group-sm">
+                                    <input type="text" class="form-control" value="{{ block.hash }}" readonly style="font-size: 11px;">
+                                    <button class="btn btn-outline-primary" onclick="copyHash('{{ block.hash }}')">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <small class="text-muted d-block mb-1">前一区块哈希</small>
+                                <div class="input-group input-group-sm">
+                                    <input type="text" class="form-control" value="{{ block.prev_hash }}" readonly style="font-size: 11px;">
+                                    <button class="btn btn-outline-primary" onclick="copyHash('{{ block.prev_hash }}')">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 交易列表 -->
+                    {% if block.transactions %}
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <h6 class="text-success mb-3"><i class="fas fa-exchange-alt"></i> 区块交易 ({{ block.tx_count }})</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="font-size: 12px;">交易ID</th>
+                                            <th style="font-size: 12px;">类型</th>
+                                            <th style="font-size: 12px;">合约</th>
+                                            <th style="font-size: 12px;">方法</th>
+                                            <th style="font-size: 12px;">Gas</th>
+                                            <th style="font-size: 12px;">状态</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for tx in block.transactions %}
+                                        <tr>
+                                            <td style="font-size: 11px;"><code>{{ tx.txid[:16] }}...</code></td>
+                                            <td style="font-size: 12px;">
+                                                <span class="badge bg-info">{{ tx.type }}</span>
+                                            </td>
+                                            <td style="font-size: 12px;">{{ tx.contract_name }}</td>
+                                            <td style="font-size: 12px;">{{ tx.method }}</td>
+                                            <td style="font-size: 12px;">{{ tx.gas_used }}</td>
+                                            <td style="font-size: 12px;">
+                                                {% if tx.code == 0 %}
+                                                <span class="badge bg-success">{{ tx.message }}</span>
+                                                {% else %}
+                                                <span class="badge bg-danger">错误</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+
+            {% if not blocks %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> 暂无区块数据
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% else %}
+    <div class="alert alert-danger">
+        <i class="fas fa-exclamation-circle"></i>
+        <strong>错误</strong> - 无法连接到长安链
+        {% if blockchain_info.error %}
+        <br><small>{{ blockchain_info.error }}</small>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .bg-gradient {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .card {
+        transition: all 0.3s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1) !important;
+    }
+
+    code {
+        background-color: #f5f5f5;
+        padding: 2px 4px;
+        border-radius: 3px;
+        font-size: 11px;
+    }
+
+    .table-sm td {
+        padding: 6px;
+        vertical-align: middle;
+    }
+</style>
+
+<script>
+function copyHash(hash) {
+    navigator.clipboard.writeText(hash).then(() => {
+        alert('已复制到剪贴板');
+    }).catch(err => {
+        console.error('复制失败:', err);
+    });
+}
+</script>
+{% endblock %}

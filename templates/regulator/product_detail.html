@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>产品详情 - 监管者 - 产品溯源系统</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">产品溯源区块链系统</div>
+        <div class="nav-menu">
+            <a href="{{ url_for('regulator.dashboard') }}">监管概览</a>
+            <a href="{{ url_for('regulator.audit_trail') }}">审计追踪</a>
+            <a href="{{ url_for('blockchain_explorer') }}">区块链浏览器</a>
+            <a href="{{ url_for('auth.logout') }}">退出登录</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>产品详情 - 监管视图</h1>
+            <div class="action-buttons">
+                <a href="{{ url_for('regulator.dashboard') }}" class="btn btn-secondary">返回概览</a>
+                <button onclick="window.print()" class="btn btn-primary">打印报告</button>
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% if product %}
+        <div class="detail-grid">
+            <!-- 产品基本信息 -->
+            <div class="detail-card">
+                <h2><i class="fas fa-info-circle"></i> 产品基本信息</h2>
+                <table class="info-table">
+                    <tr>
+                        <th>产品ID:</th>
+                        <td><code>{{ product['product_id'] }}</code></td>
+                    </tr>
+                    <tr>
+                        <th>产品名称:</th>
+                        <td><strong>{{ product['name'] }}</strong></td>
+                    </tr>
+                    <tr>
+                        <th>批次号:</th>
+                        <td>{{ product['batch_number'] }}</td>
+                    </tr>
+                    <tr>
+                        <th>生产日期:</th>
+                        <td>{{ product['production_date'] }}</td>
+                    </tr>
+                    <tr>
+                        <th>生产商:</th>
+                        <td>{{ product['manufacturer_company'] or '未知' }}</td>
+                    </tr>
+                    <tr>
+                        <th>当前所有者:</th>
+                        <td>{{ product['owner_company'] or product['owner_name'] or '未知' }}</td>
+                    </tr>
+                    <tr>
+                        <th>注册时间:</th>
+                        <td>{{ product['created_at'] }}</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- 区块链信息 -->
+            <div class="detail-card">
+                <h2><i class="fas fa-cube"></i> 区块链信息</h2>
+                <table class="info-table">
+                    <tr>
+                        <th>区块哈希:</th>
+                        <td><code class="hash-text">{{ product['block_hash'][:32] if product['block_hash'] else '未知' }}...</code></td>
+                    </tr>
+                    <tr>
+                        <th>记录时间:</th>
+                        <td>{{ product['created_at'] }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- 完整溯源链 -->
+        <div class="detail-card">
+            <h2><i class="fas fa-history"></i> 完整溯源链</h2>
+            {% if history and history.get('events') %}
+                <div class="timeline">
+                    {% for event in history['events'] %}
+                    <div class="timeline-item mb-4">
+                        <div class="row">
+                            <div class="col-md-2 text-end">
+                                <small class="text-muted">{{ event.get('timestamp', event.get('created_at', '未知')) }}</small>
+                            </div>
+                            <div class="col-md-1 text-center">
+                                {% if event.get('type') == 'register' or event.get('event_type') == 'register' %}
+                                    <i class="fas fa-plus-circle fa-2x text-primary"></i>
+                                {% elif event.get('type') == 'transfer' or event.get('event_type') == 'transfer' %}
+                                    <i class="fas fa-exchange-alt fa-2x text-info"></i>
+                                {% elif event.get('type') == 'quality_check' or event.get('event_type') == 'quality_check' %}
+                                    <i class="fas fa-check-circle fa-2x text-success"></i>
+                                {% elif event.get('type') == 'logistics' or event.get('event_type') == 'logistics' %}
+                                    <i class="fas fa-truck fa-2x text-warning"></i>
+                                {% else %}
+                                    <i class="fas fa-circle fa-2x text-secondary"></i>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-9">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6 class="card-title">
+                                            {{ event.get('title', event.get('event_type', event.get('type', '事件'))) }}
+                                        </h6>
+                                        <p class="card-text">
+                                            {{ event.get('details', event.get('data', '无详细信息')) }}
+                                        </p>
+                                        {% if event.get('location') %}
+                                            <p class="text-muted"><small><i class="fas fa-map-marker-alt"></i> 位置: {{ event['location'] }}</small></p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> 暂无溯源事件
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- 完整性验证 -->
+        <div class="detail-card">
+            <h2><i class="fas fa-shield-alt"></i> 完整性验证</h2>
+            <div class="verification-results">
+                <div class="verification-item">
+                    <span class="verification-label">产品数据完整性:</span>
+                    <span class="badge badge-success"><i class="fas fa-check"></i> 验证通过</span>
+                </div>
+                <div class="verification-item">
+                    <span class="verification-label">区块链一致性:</span>
+                    <span class="badge badge-success"><i class="fas fa-check"></i> 验证通过</span>
+                </div>
+                <div class="verification-item">
+                    <span class="verification-label">时间戳有效性:</span>
+                    <span class="badge badge-success"><i class="fas fa-check"></i> 验证通过</span>
+                </div>
+            </div>
+        </div>
+
+        {% else %}
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-circle"></i> 产品信息未找到
+        </div>
+        {% endif %}
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

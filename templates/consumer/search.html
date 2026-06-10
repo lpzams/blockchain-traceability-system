@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>产品搜索结果 - 消费者</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/consumer.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">产品溯源区块链系统</div>
+        <div class="nav-menu">
+            <a href="{{ url_for('consumer.dashboard') }}">我的查询</a>
+            <a href="{{ url_for('consumer.query') }}">产品查询</a>
+            <a href="{{ url_for('consumer.verify') }}">真伪验证</a>
+            <a href="{{ url_for('consumer.search') }}" class="active">产品搜索</a>
+            <a href="{{ url_for('consumer.favorites') }}">我的收藏</a>
+            <a href="{{ url_for('consumer.watches') }}">我的关注</a>
+            <a href="{{ url_for('blockchain_explorer') }}">区块链</a>
+            <a href="{{ url_for('auth.logout') }}">退出登录</a>
+        </div>
+    </nav>
+
+    <div class="container consumer-search-container">
+        <div class="search-header">
+            <h1>产品搜索结果</h1>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="search-form-section">
+            <form method="POST" action="{{ url_for('consumer.search') }}" class="search-form">
+                <div class="form-group">
+                    <label for="keyword">搜索关键词</label>
+                    <input type="text" id="keyword" name="keyword" placeholder="输入产品名称或批次号" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="search_type">搜索类型</label>
+                    <select id="search_type" name="search_type" class="form-control">
+                        <option value="name">产品名称</option>
+                        <option value="batch">批次号</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">搜索</button>
+                <a href="{{ url_for('consumer.query') }}" class="btn btn-secondary">返回</a>
+            </form>
+        </div>
+
+        {% if results %}
+        <div class="search-results-section">
+            <div class="results-header">
+                <h2>搜索结果 (共 {{ results|length }} 个)</h2>
+            </div>
+
+            <div class="results-grid">
+                {% for result in results %}
+                <div class="result-card">
+                    <div class="card-header">
+                        <h3>{{ result['name'] }}</h3>
+                        <span class="batch-badge">{{ result['batch_number'] }}</span>
+                    </div>
+                    <div class="card-body">
+                        <p class="manufacturer-info">
+                            <span class="label">生产商：</span>
+                            <span class="value">{{ result['manufacturer'] or '未知' }}</span>
+                        </p>
+                        <p class="product-id-info">
+                            <span class="label">产品ID：</span>
+                            <span class="value product-id">{{ result['id'] }}</span>
+                        </p>
+                    </div>
+                    <div class="card-footer">
+                        <a href="{{ url_for('consumer.trace_result', product_id=result['id']) }}" class="btn btn-sm btn-primary">查看详情</a>
+                        <a href="{{ url_for('consumer.rate_product', product_id=result['id']) }}" class="btn btn-sm btn-warning">评价</a>
+                        <button class="btn btn-sm btn-outline-danger" onclick="toggleFavorite('{{ result['id'] }}')">收藏</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">🔍</div>
+            <p>未找到匹配的产品</p>
+            <p class="empty-tip">请尝试其他关键词或搜索类型</p>
+            <a href="{{ url_for('consumer.query') }}" class="btn btn-primary mt-3">返回查询</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/consumer.js') }}"></script>
+</body>
+</html>

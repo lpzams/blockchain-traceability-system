@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}批量注册产品 - 生产商{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-list"></i> 批量注册产品</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('manufacturer.batch_register') }}">
+                    <div class="mb-3">
+                        <label for="batch_data" class="form-label">产品数据 (JSON格式) *</label>
+                        <textarea class="form-control" id="batch_data" name="batch_data" rows="8" required
+                                  placeholder='[{"name": "产品1", "batch_number": "001", "production_date": "2024-01-01"}, ...]'></textarea>
+                        <small class="form-text text-muted">
+                            请输入JSON数组格式的产品数据，包含 name, batch_number, production_date 字段
+                        </small>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="use_async" name="use_async">
+                            <label class="form-check-label" for="use_async">
+                                异步处理
+                            </label>
+                        </div>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-upload"></i> 提交注册
+                        </button>
+                        <a href="{{ url_for('manufacturer.dashboard') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> 返回
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

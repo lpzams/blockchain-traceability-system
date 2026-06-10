@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}采购申请管理 - 生产商{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h2><i class="fas fa-tasks"></i> 采购申请管理</h2>
+        <p class="text-muted">查看和处理经销商的采购申请</p>
+    </div>
+</div>
+
+{% if requests %}
+<div class="row">
+    <div class="col-md-12">
+        {% for req in requests %}
+        <div class="card mb-3">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-0">
+                            <i class="fas fa-box"></i>
+                            {{ req['product_name'] }} (批次: {{ req['batch_number'] }})
+                        </h5>
+                        <small class="text-muted">申请人: {{ req['requester_company'] }} - {{ req['requester_name'] }}</small>
+                    </div>
+                    {% if req['status'] == 'pending' %}
+                        <span class="badge badge-warning">待审批</span>
+                    {% elif req['status'] == 'approved' %}
+                        <span class="badge badge-success">已批准</span>
+                    {% elif req['status'] == 'rejected' %}
+                        <span class="badge badge-danger">已拒绝</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>申请数量：</strong> {{ req['quantity'] }}</p>
+                        <p><strong>申请时间：</strong> {{ req['created_at'] }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>状态：</strong> {{ req['status'] }}</p>
+                        <p><strong>备注：</strong> {{ req['notes'] or '无' }}</p>
+                    </div>
+                </div>
+
+                {% if req['status'] == 'pending' %}
+                <div class="d-flex gap-2 mt-3">
+                    <form method="POST" action="{{ url_for('manufacturer.approve_request', request_id=req['id']) }}" style="display:inline;">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-check"></i> 批准
+                        </button>
+                    </form>
+                    <form method="POST" action="{{ url_for('manufacturer.reject_request', request_id=req['id']) }}" style="display:inline;">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-times"></i> 拒绝
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% else %}
+<div class="alert alert-info">
+    <i class="fas fa-info-circle"></i> 暂无采购申请
+</div>
+{% endif %}
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <a href="{{ url_for('manufacturer.dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> 返回仪表板
+        </a>
+    </div>
+</div>
+{% endblock %}

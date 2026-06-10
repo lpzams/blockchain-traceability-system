@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}真伪验证{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        {% if verification %}
+        <!-- 验证结果页面 -->
+        <div class="card shadow-lg">
+            <div class="card-header {% if verification.valid %}bg-success{% else %}bg-danger{% endif %} text-white">
+                <h4 class="mb-0">
+                    <i class="fas {% if verification.valid %}fa-check-circle{% else %}fa-times-circle{% endif %}"></i>
+                    验证结果
+                </h4>
+            </div>
+            <div class="card-body text-center py-5">
+                {% if verification.valid %}
+                    <i class="fas fa-shield-alt fa-5x text-success mb-4"></i>
+                    <h2 class="text-success mb-3">产品验证通过</h2>
+                    <p class="lead">{{ verification.message }}</p>
+                    <p class="text-muted">该产品信息已记录在区块链上，数据完整且未被篡改</p>
+                {% else %}
+                    <i class="fas fa-exclamation-triangle fa-5x text-danger mb-4"></i>
+                    <h2 class="text-danger mb-3">验证失败</h2>
+                    <p class="lead">{{ verification.message }}</p>
+                    <p class="text-muted">请谨慎购买此产品</p>
+                {% endif %}
+
+                <div class="mt-4">
+                    <p><strong>产品ID:</strong> <code>{{ product_id }}</code></p>
+                </div>
+
+                <div class="d-grid gap-2 col-md-6 mx-auto mt-4">
+                    <a href="{{ url_for('consumer.trace_result', product_id=product_id) }}" class="btn btn-primary">
+                        <i class="fas fa-history"></i> 查看溯源信息
+                    </a>
+                    <a href="{{ url_for('consumer.verify') }}" class="btn btn-secondary">
+                        <i class="fas fa-search"></i> 验证其他产品
+                    </a>
+                    <a href="{{ url_for('consumer.dashboard') }}" class="btn btn-info">
+                        <i class="fas fa-home"></i> 返回控制台
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5><i class="fas fa-info-circle"></i> 验证说明</h5>
+                <ul class="mt-3">
+                    <li>系统通过区块链技术验证产品信息的完整性</li>
+                    <li>每个区块的哈希值与前一个区块关联，形成不可篡改的链式结构</li>
+                    <li>验证通过表示产品信息真实可靠</li>
+                    <li>验证失败可能表示产品信息被篡改或产品不存在</li>
+                </ul>
+            </div>
+        </div>
+        {% else %}
+        <!-- 查询表单 -->
+        <div class="card shadow-lg">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-shield-alt"></i> 产品真伪验证</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('consumer.verify') }}">
+                    <div class="mb-3">
+                        <label for="product_id" class="form-label">产品ID或批次号</label>
+                        <input type="text" class="form-control form-control-lg" id="product_id" name="product_id"
+                               placeholder="输入产品ID或批次号（如: 001）" required>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-check"></i> 开始验证
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5><i class="fas fa-info-circle"></i> 验证说明</h5>
+                <ul class="mt-3">
+                    <li>系统通过区块链技术验证产品信息的完整性</li>
+                    <li>每个区块的哈希值与前一个区块关联，形成不可篡改的链式结构</li>
+                    <li>验证通过表示产品信息真实可靠</li>
+                    <li>验证失败可能表示产品信息被篡改或产品不存在</li>
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

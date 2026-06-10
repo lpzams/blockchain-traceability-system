@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}高级分析 - 产品溯源系统{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- 页面标题 -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-chart-line"></i> 高级分析与智能预测</h2>
+            <p class="text-muted">基于大数据的产品溯源智能分析系统</p>
+        </div>
+    </div>
+
+    <!-- 功能卡片 -->
+    <div class="row g-4">
+        <!-- 1. 风险评估 -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm feature-card">
+                <div class="card-body text-center">
+                    <div class="feature-icon bg-danger bg-opacity-10 mx-auto mb-3">
+                        <i class="fas fa-exclamation-triangle text-danger"></i>
+                    </div>
+                    <h5 class="card-title">产品风险评估</h5>
+                    <p class="card-text text-muted small">
+                        基于供应链复杂度、交易历史分析产品风险等级
+                    </p>
+                    <a href="{{ url_for('analytics.risk_assessment') }}" class="btn btn-outline-danger btn-sm">
+                        查看分析 <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 供应链网络 -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm feature-card">
+                <div class="card-body text-center">
+                    <div class="feature-icon bg-primary bg-opacity-10 mx-auto mb-3">
+                        <i class="fas fa-project-diagram text-primary"></i>
+                    </div>
+                    <h5 class="card-title">供应链网络分析</h5>
+                    <p class="card-text text-muted small">
+                        可视化供应链参与方和交互关系，分析网络拓扑
+                    </p>
+                    <a href="{{ url_for('analytics.supply_chain_network') }}" class="btn btn-outline-primary btn-sm">
+                        查看分析 <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. 碳足迹 -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm feature-card">
+                <div class="card-body text-center">
+                    <div class="feature-icon bg-success bg-opacity-10 mx-auto mb-3">
+                        <i class="fas fa-leaf text-success"></i>
+                    </div>
+                    <h5 class="card-title">碳足迹计算</h5>
+                    <p class="card-text text-muted small">
+                        追踪产品全链路碳排放，支持ESG评估
+                    </p>
+                    <a href="{{ url_for('analytics.carbon_footprint') }}" class="btn btn-outline-success btn-sm">
+                        查看分析 <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. 质量热力图 -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm feature-card">
+                <div class="card-body text-center">
+                    <div class="feature-icon bg-warning bg-opacity-10 mx-auto mb-3">
+                        <i class="fas fa-fire text-warning"></i>
+                    </div>
+                    <h5 class="card-title">质量追溯热力图</h5>
+                    <p class="card-text text-muted small">
+                        热力图展示质检通过率分布，识别质量风险
+                    </p>
+                    <a href="{{ url_for('analytics.quality_heatmap') }}" class="btn btn-outline-warning btn-sm">
+                        查看分析 <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. 智能推荐 -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm feature-card">
+                <div class="card-body text-center">
+                    <div class="feature-icon bg-info bg-opacity-10 mx-auto mb-3">
+                        <i class="fas fa-lightbulb text-info"></i>
+                    </div>
+                    <h5 class="card-title">智能推荐系统</h5>
+                    <p class="card-text text-muted small">
+                        基于大数据分析推荐最优供应链操作
+                    </p>
+                    <a href="{{ url_for('analytics.recommendations') }}" class="btn btn-outline-info btn-sm">
+                        查看推荐 <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. 预测引擎 -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm feature-card">
+                <div class="card-body text-center">
+                    <div class="feature-icon bg-purple bg-opacity-10 mx-auto mb-3">
+                        <i class="fas fa-crystal-ball text-purple"></i>
+                    </div>
+                    <h5 class="card-title">交付时间预测</h5>
+                    <p class="card-text text-muted small">
+                        机器学习模型预测产品交付时间和质量风险
+                    </p>
+                    <a href="{{ url_for('analytics.recommendations') }}" class="btn btn-outline-secondary btn-sm">
+                        查看预测 <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 系统特性说明 -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                <h5 class="alert-heading"><i class="fas fa-info-circle"></i> 系统特性</h5>
+                <ul class="mb-0">
+                    <li><strong>实时分析：</strong>基于区块链数据的实时分析和洞察</li>
+                    <li><strong>智能算法：</strong>采用多维度风险评估和预测模型</li>
+                    <li><strong>可视化展示：</strong>支持网络图、热力图、趋势图等多种展示方式</li>
+                    <li><strong>决策支持：</strong>为供应链管理提供数据驱动的决策支持</li>
+                    <li><strong>合规性：</strong>支持ESG、碳中和等环保和社会责任指标</li>
+                </ul>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .feature-card {
+        border: none;
+        transition: all 0.3s ease;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 24px rgba(0,0,0,0.15) !important;
+    }
+
+    .feature-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+    }
+
+    .bg-purple {
+        background-color: #764ba2;
+    }
+
+    .text-purple {
+        color: #764ba2;
+    }
+</style>
+{% endblock %}

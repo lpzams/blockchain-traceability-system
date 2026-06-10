@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}溯源结果{% endblock %}
+
+{% block content %}
+{% if trace_data %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <a href="{{ url_for('consumer.query') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> 返回查询
+        </a>
+        <a href="{{ url_for('consumer.verify') }}" class="btn btn-success">
+            <i class="fas fa-shield-alt"></i> 真伪验证
+        </a>
+        <a href="{{ url_for('consumer.rate_product', product_id=trace_data['product']['id']) }}" class="btn btn-warning">
+            <i class="fas fa-star"></i> 评价产品
+        </a>
+        <button class="btn btn-danger" id="favoriteBtn" onclick="toggleFavorite('{{ trace_data['product']['id'] }}')">
+            <i class="fas fa-heart"></i> <span id="favoriteText">收藏</span>
+        </button>
+        <button class="btn btn-info" id="watchBtn" onclick="toggleWatch('{{ trace_data['product']['id'] }}')">
+            <i class="fas fa-eye"></i> <span id="watchText">关注</span>
+        </button>
+        <a href="{{ url_for('consumer.dashboard') }}" class="btn btn-primary">
+            <i class="fas fa-home"></i> 返回控制台
+        </a>
+    </div>
+</div>
+
+<div data-product-id="{{ trace_data['product']['id'] }}"></div>
+
+<!-- 产品基本信息 -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0"><i class="fas fa-box"></i> 产品信息</h4>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <th width="35%"><i class="fas fa-hashtag"></i> 产品ID</th>
+                        <td><code>{{ trace_data['product']['id'] }}</code></td>
+                    </tr>
+                    <tr>
+                        <th><i class="fas fa-tag"></i> 产品名称</th>
+                        <td><strong>{{ trace_data['product']['name'] }}</strong></td>
+                    </tr>
+                    <tr>
+                        <th><i class="fas fa-barcode"></i> 批次号</th>
+                        <td>{{ trace_data['product']['batch_number'] }}</td>
+                    </tr>
+                    <tr>
+                        <th><i class="fas fa-calendar"></i> 生产日期</th>
+                        <td>{{ trace_data['product']['production_date'] }}</td>
+                    </tr>
+                    <tr>
+                        <th><i class="fas fa-industry"></i> 生产商</th>
+                        <td>
+                            <span class="badge badge-primary">{{ trace_data['product']['manufacturer_company'] }}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><i class="fas fa-user"></i> 当前所有者</th>
+                        <td>
+                            <span class="badge badge-info">{{ trace_data['product']['current_owner_company'] }}</span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 区块链验证信息 -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0"><i class="fas fa-shield-alt"></i> 区块链验证</h4>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <th width="35%"><i class="fas fa-check-circle"></i> 验证状态</th>
+                        <td>
+                            {% if trace_data['is_authentic'] %}
+                                <span class="badge badge-success">
+                                    <i class="fas fa-check"></i> 已验证
+                                </span>
+                            {% else %}
+                                <span class="badge badge-danger">
+                                    <i class="fas fa-times"></i> 验证失败
+                                </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><i class="fas fa-align-left"></i> 验证结果</th>
+                        <td>{{ trace_data['verification_message'] }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 溯源事件时间线 -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0"><i class="fas fa-history"></i> 完整溯源链 ({{ trace_data['events']|length }} 条记录)</h4>
+            </div>
+            <div class="card-body">
+                {% if trace_data['events'] %}
+                    <div class="timeline">
+                        {% for event in trace_data['events'] %}
+                        <div class="timeline-item mb-4">
+                            <div class="row">
+                                <div class="col-md-2 text-end">
+                                    <small class="text-muted">{{ event['timestamp'] }}</small>
+                                </div>
+                                <div class="col-md-1 text-center">
+                                    {% if event['type'] == 'register' %}
+                                        <i class="fas fa-plus-circle fa-2x text-primary"></i>
+                                    {% elif event['type'] == 'transfer' %}
+                                        <i class="fas fa-exchange-alt fa-2x text-info"></i>
+                                    {% elif event['type'] == 'quality_check' %}
+                                        <i class="fas fa-check-circle fa-2x text-success"></i>
+                                    {% elif event['type'] == 'logistics' %}
+                                        <i class="fas fa-truck fa-2x text-warning"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-9">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h6 class="card-title">{{ event['title'] }}</h6>
+                                            <p class="card-text">{{ event['details'] }}</p>
+                                            {% if event['location'] %}<p class="text-muted"><small>位置: {{ event['location'] }}</small></p>{% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> 暂无溯源事件
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% else %}
+<div class="alert alert-danger">
+    <i class="fas fa-exclamation-circle"></i> 未找到产品信息
+</div>
+{% endif %}
+{% endblock %}

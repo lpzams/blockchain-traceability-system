@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}转让产品 - 经销商{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0"><i class="fas fa-exchange-alt"></i> 转让产品</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('distributor.transfer') }}">
+                    <div class="mb-3">
+                        <label for="product_id" class="form-label">选择产品</label>
+                        <select class="form-select" id="product_id" name="product_id" required>
+                            <option value="">请选择产品</option>
+                            {% for product in products %}
+                                <option value="{{ product['product_id'] }}">
+                                    {{ product['name'] }} - {{ product['batch_number'] }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="to_user_id" class="form-label">转让给</label>
+                        <select class="form-select" id="to_user_id" name="to_user_id" required>
+                            <option value="">请选择接收方</option>
+                            {% for user in users %}
+                                <option value="{{ user['id'] }}">
+                                    {{ user['username'] }} ({{ user['company_name'] or '个人' }} - {{ user['role'] }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="location" class="form-label">转让地点</label>
+                        <input type="text" class="form-control" id="location" name="location" required>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="use_async" name="use_async">
+                            <label class="form-check-label" for="use_async">
+                                异步处理（高并发场景）
+                            </label>
+                        </div>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save"></i> 确认转让
+                        </button>
+                        <a href="{{ url_for('distributor.dashboard') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> 返回
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

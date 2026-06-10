@@ -1,0 +1,265 @@
+{% extends "base.html" %}
+
+{% block title %}生产商仪表板{% endblock %}
+
+{% block content %}
+<div class="row mb-4 fade-in">
+    <div class="col-md-12">
+        <div class="glass-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="text-gradient mb-2">
+                        <i class="fas fa-tachometer-alt"></i> 生产商仪表板
+                    </h2>
+                    <p class="text-muted mb-0">
+                        <i class="fas fa-user"></i> {{ current_user['username'] }}
+                        <span class="badge badge-primary ms-2">{{ current_user['company_name'] }}</span>
+                    </p>
+                </div>
+                <div>
+                    <a href="{{ url_for('manufacturer.notifications') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-bell"></i> 通知
+                        {% if unread_count > 0 %}
+                        <span class="badge bg-danger ms-1">{{ unread_count }}</span>
+                        {% endif %}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 统计卡片 -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card fade-in" style="animation-delay: 0.1s">
+            <i class="fas fa-box fa-2x text-primary mb-3"></i>
+            <h3>总产品数</h3>
+            <p class="stat-number" data-target="{{ products|length }}">0</p>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card fade-in" style="animation-delay: 0.2s">
+            <i class="fas fa-check-circle fa-2x text-success mb-3"></i>
+            <h3>持有产品</h3>
+            <p class="stat-number" data-target="{{ products|selectattr('current_owner_id', 'equalto', current_user['id'])|list|length }}">0</p>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card fade-in" style="animation-delay: 0.3s">
+            <i class="fas fa-exchange-alt fa-2x text-info mb-3"></i>
+            <h3>已转让</h3>
+            <p class="stat-number" data-target="{{ products|selectattr('current_owner_id', 'ne', current_user['id'])|list|length }}">0</p>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card fade-in" style="animation-delay: 0.4s">
+            <i class="fas fa-clipboard-check fa-2x text-warning mb-3"></i>
+            <h3>质检记录</h3>
+            <p class="stat-number" data-target="{{ total_quality_checks }}">0</p>
+        </div>
+    </div>
+</div>
+
+<!-- 图表区域 -->
+<div class="row g-4 mb-4">
+    <div class="col-md-8">
+        <div class="card fade-in" style="animation-delay: 0.5s">
+            <div class="card-header">
+                <i class="fas fa-chart-line"></i> 产品趋势
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="productsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card fade-in" style="animation-delay: 0.6s">
+            <div class="card-header">
+                <i class="fas fa-chart-pie"></i> 产品状态
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 快速操作 -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card fade-in" style="animation-delay: 0.7s">
+            <div class="card-header">
+                <i class="fas fa-bolt"></i> 快速操作
+            </div>
+            <div class="card-body">
+                <div class="d-flex gap-3 flex-wrap">
+                    <a href="{{ url_for('manufacturer.register_product_page') }}" class="btn btn-primary">
+                        <i class="fas fa-plus-circle"></i> 注册新产品
+                    </a>
+                    <a href="{{ url_for('manufacturer.purchase_requests') }}" class="btn btn-success">
+                        <i class="fas fa-shopping-cart"></i> 采购申请
+                    </a>
+                    <a href="{{ url_for('manufacturer.transfer_product') }}" class="btn btn-info">
+                        <i class="fas fa-exchange-alt"></i> 转移产品
+                    </a>
+                    <a href="{{ url_for('manufacturer.quality_check') }}" class="btn btn-warning">
+                        <i class="fas fa-flask"></i> 添加质检
+                    </a>
+                    <a href="{{ url_for('manufacturer.product_recalls') }}" class="btn btn-danger">
+                        <i class="fas fa-exclamation-triangle"></i> 产品召回
+                    </a>
+                    <a href="{{ url_for('manufacturer.notifications') }}" class="btn btn-light">
+                        <i class="fas fa-bell"></i> 通知
+                    </a>
+                    <a href="{{ url_for('blockchain_explorer') }}" class="btn btn-secondary">
+                        <i class="fas fa-cubes"></i> 区块链浏览器
+                    </a>
+                    <button class="btn btn-info" onclick="refreshData()">
+                        <i class="fas fa-sync-alt"></i> 刷新数据
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 产品列表 -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card fade-in" style="animation-delay: 0.8s">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-list"></i> 我的产品列表</span>
+                <span class="badge badge-primary">{{ products|length }} 个产品</span>
+            </div>
+            <div class="card-body">
+                {% if products %}
+                    <div class="table-responsive">
+                        <table class="data-table" id="productsTable">
+                            <thead>
+                                <tr>
+                                    <th><i class="fas fa-hashtag"></i> 产品ID</th>
+                                    <th><i class="fas fa-tag"></i> 产品名称</th>
+                                    <th><i class="fas fa-barcode"></i> 批次号</th>
+                                    <th><i class="fas fa-calendar"></i> 生产日期</th>
+                                    <th><i class="fas fa-user"></i> 当前所有者</th>
+                                    <th><i class="fas fa-info-circle"></i> 状态</th>
+                                    <th><i class="fas fa-cog"></i> 操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in products %}
+                                <tr class="fade-in" style="animation-delay: {{ loop.index * 0.05 }}s">
+                                    <td><code>{{ product['product_id'] }}</code></td>
+                                    <td><strong>{{ product['name'] }}</strong></td>
+                                    <td>{{ product['batch_number'] }}</td>
+                                    <td>{{ product['production_date'] }}</td>
+                                    <td>
+                                        {% if product['current_owner_id'] == current_user['id'] %}
+                                            <span class="badge badge-success">
+                                                <i class="fas fa-check"></i> 我
+                                            </span>
+                                        {% else %}
+                                            <span class="badge badge-secondary">
+                                                {{ product['owner_company'] }}
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if product['current_owner_id'] == current_user['id'] %}
+                                            <span class="badge badge-primary">
+                                                <i class="fas fa-box"></i> 持有中
+                                            </span>
+                                        {% else %}
+                                            <span class="badge badge-info">
+                                                <i class="fas fa-paper-plane"></i> 已转让
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('manufacturer.product_detail', product_id=product['product_id']) }}"
+                                           class="btn btn-sm btn-primary">
+                                            <i class="fas fa-eye"></i> 查看
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-box-open fa-4x text-muted mb-3"></i>
+                        <p class="text-muted mb-3">暂无产品记录</p>
+                        <a href="{{ url_for('manufacturer.register_product_page') }}" class="btn btn-primary">
+                            <i class="fas fa-plus-circle"></i> 注册第一个产品
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 初始化数字动画
+    document.querySelectorAll('.stat-number').forEach(element => {
+        const target = parseInt(element.dataset.target);
+        if (!isNaN(target)) {
+            BlockchainApp.animateNumber(element, 0, target, 1500);
+        }
+    });
+
+    // 产品趋势图表
+    if (document.getElementById('productsChart')) {
+        const chartManager = new BlockchainApp.ChartManager();
+
+        // 模拟数据 - 实际应该从后端获取
+        const monthlyData = {
+            labels: ['1月', '2月', '3月', '4月', '5月', '6月'],
+            values: [5, 8, 12, 15, 18, {{ products|length }}],
+            label: '产品数量'
+        };
+
+        chartManager.createStatsChart('productsChart', monthlyData);
+    }
+
+    // 产品状态饼图
+    if (document.getElementById('statusChart')) {
+        const chartManager = new BlockchainApp.ChartManager();
+
+        const holdingCount = {{ products|selectattr('current_owner_id', 'equalto', current_user['id'])|list|length }};
+        const transferredCount = {{ products|selectattr('current_owner_id', 'ne', current_user['id'])|list|length }};
+
+        const statusData = {
+            labels: ['持有中', '已转让'],
+            values: [holdingCount, transferredCount]
+        };
+
+        chartManager.createPieChart('statusChart', statusData);
+    }
+
+    // 表格增强
+    if (document.getElementById('productsTable')) {
+        new BlockchainApp.TableEnhancer('productsTable');
+    }
+});
+
+// 刷新数据函数
+function refreshData() {
+    const btn = event.target.closest('button');
+    BlockchainApp.showLoading(btn);
+
+    setTimeout(() => {
+        location.reload();
+    }, 500);
+}
+</script>
+{% endblock %}

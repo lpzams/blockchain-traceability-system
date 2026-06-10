@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}通知中心{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-bell"></i> 通知中心</h2>
+            <p class="text-muted">您有 {{ unread_count }} 条未读通知</p>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="row">
+        <div class="col-md-8">
+            {% if notifications %}
+                <div class="list-group">
+                    {% for notif in notifications %}
+                    <div class="list-group-item {% if not notif['is_read'] %}bg-light{% endif %}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div style="flex: 1;">
+                                <h6 class="mb-1">
+                                    {{ notif['title'] }}
+                                    {% if not notif['is_read'] %}
+                                    <span class="badge bg-primary">新</span>
+                                    {% endif %}
+                                </h6>
+                                <p class="mb-2">{{ notif['message'] }}</p>
+                                <small class="text-muted">
+                                    <i class="fas fa-clock"></i> {{ notif['created_at'] }}
+                                </small>
+                            </div>
+                            <div>
+                                <span class="badge {% if notif['priority'] == 'high' %}bg-danger{% elif notif['priority'] == 'medium' %}bg-warning{% else %}bg-info{% endif %}">
+                                    {{ notif['priority'].upper() }}
+                                </span>
+                                {% if not notif['is_read'] %}
+                                <button class="btn btn-sm btn-outline-primary ms-2"
+                                        onclick="markAsRead({{ notif['id'] }})">
+                                    标记已读
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> 暂无通知
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">通知统计</h6>
+                </div>
+                <div class="card-body">
+                    <p><strong>未读通知:</strong> {{ unread_count }}</p>
+                    <p><strong>总通知数:</strong> {{ notifications|length }}</p>
+                    <p><strong>优先级分布:</strong></p>
+                    <ul class="list-unstyled">
+                        <li><span class="badge bg-danger">高</span> - 采购批准/拒绝、产品召回</li>
+                        <li><span class="badge bg-warning">中</span> - 产品关注更新</li>
+                        <li><span class="badge bg-info">低</span> - 其他通知</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function markAsRead(notificationId) {
+    fetch(`{{ url_for_prefix }}/notifications/${notificationId}/read`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    }).then(response => response.json())
+      .then(data => {
+          if (data.success) {
+              location.reload();
+          }
+      });
+}
+</script>
+
+<style>
+.list-group-item {
+    border-left: 4px solid transparent;
+    transition: all 0.3s;
+}
+
+.list-group-item:hover {
+    border-left-color: #0d6efd;
+}
+
+.list-group-item.bg-light {
+    border-left-color: #0d6efd;
+}
+</style>
+{% endblock %}

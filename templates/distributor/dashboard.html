@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>经销商仪表板 - 产品溯源系统</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">产品溯源区块链系统</div>
+        <div class="nav-menu">
+            <a href="{{ url_for('distributor.dashboard') }}" class="active">我的产品</a>
+            <a href="{{ url_for('distributor.query') }}">产品查询</a>
+            <a href="{{ url_for('distributor.transfer') }}">转让产品</a>
+            <a href="{{ url_for('distributor.logistics') }}">物流管理</a>
+            <a href="{{ url_for('blockchain_explorer') }}">区块链浏览器</a>
+            <a href="{{ url_for('auth.logout') }}">退出登录</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="dashboard-header">
+            <h1>经销商仪表板</h1>
+            <p class="user-info">欢迎，{{ current_user['username'] }} ({{ current_user['company_name'] }})</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>持有产品数</h3>
+                <p class="stat-number">{{ products|length }}</p>
+            </div>
+            <div class="stat-card">
+                <h3>已转让产品</h3>
+                <p class="stat-number">{{ products|selectattr('current_owner_id', 'ne', current_user['id'])|list|length }}</p>
+            </div>
+            <div class="stat-card">
+                <h3>物流记录数</h3>
+                <p class="stat-number">{{ total_logistics }}</p>
+            </div>
+            <div class="stat-card">
+                <h3>区块链区块数</h3>
+                <p class="stat-number">{{ blockchain_height }}</p>
+            </div>
+        </div>
+
+        <div class="products-section">
+            <h2>我的产品列表</h2>
+
+            {% if products %}
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>产品ID</th>
+                                <th>产品名称</th>
+                                <th>批次号</th>
+                                <th>生产日期</th>
+                                <th>原生产商</th>
+                                <th>当前状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in products %}
+                            <tr>
+                                <td>{{ product['product_id'] }}</td>
+                                <td>{{ product['name'] }}</td>
+                                <td>{{ product['batch_number'] }}</td>
+                                <td>{{ product['production_date'] }}</td>
+                                <td>{{ product['manufacturer_company'] }}</td>
+                                <td>
+                                    {% if product['current_owner_id'] == current_user['id'] %}
+                                        <span class="badge badge-success">持有中</span>
+                                    {% else %}
+                                        <span class="badge badge-secondary">已转让</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('distributor.product_detail', product_id=product['product_id']) }}" class="btn btn-sm btn-primary">查看详情</a>
+                                    {% if product['current_owner_id'] == current_user['id'] %}
+                                        <a href="{{ url_for('distributor.transfer', product_id=product['product_id']) }}" class="btn btn-sm btn-success">转让</a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <p>暂无产品记录</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

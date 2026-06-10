@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>审计追踪 - 产品溯源系统</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">产品溯源区块链系统</div>
+        <div class="nav-menu">
+            <a href="{{ url_for('regulator.dashboard') }}">监管概览</a>
+            <a href="{{ url_for('regulator.audit_trail') }}" class="active">审计追踪</a>
+            <a href="{{ url_for('blockchain_explorer') }}">区块链浏览器</a>
+            <a href="{{ url_for('auth.logout') }}">退出登录</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>审计追踪</h1>
+            <p class="subtitle">查看系统中所有的操作记录和活动日志</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="filter-card">
+            <h2>筛选条件</h2>
+            <form method="GET" action="{{ url_for('regulator.audit_trail') }}">
+                <div class="filter-grid">
+                    <div class="form-group">
+                        <label for="activity_type">活动类型</label>
+                        <select id="activity_type" name="activity_type" class="form-control">
+                            <option value="">全部类型</option>
+                            <option value="product_registered">产品注册</option>
+                            <option value="ownership_transfer">所有权转移</option>
+                            <option value="quality_check">质量检测</option>
+                            <option value="logistics_update">物流更新</option>
+                            <option value="user_login">用户登录</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="user_role">用户角色</label>
+                        <select id="user_role" name="user_role" class="form-control">
+                            <option value="">全部角色</option>
+                            <option value="manufacturer">生产商</option>
+                            <option value="distributor">经销商</option>
+                            <option value="consumer">消费者</option>
+                            <option value="regulator">监管者</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="start_date">开始日期</label>
+                        <input type="date" id="start_date" name="start_date" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="end_date">结束日期</label>
+                        <input type="date" id="end_date" name="end_date" class="form-control">
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">应用筛选</button>
+                    <a href="{{ url_for('regulator.audit_trail') }}" class="btn btn-secondary">重置</a>
+                </div>
+            </form>
+        </div>
+
+        <div class="audit-section">
+            <h2>审计记录</h2>
+            {% if audits %}
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>时间戳</th>
+                                <th>活动类型</th>
+                                <th>操作者</th>
+                                <th>角色</th>
+                                <th>相关产品ID</th>
+                                <th>描述</th>
+                                <th>IP地址</th>
+                                <th>区块哈希</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for audit in audits %}
+                            <tr>
+                                <td>{{ audit.timestamp }}</td>
+                                <td>
+                                    {% if audit.activity_type == 'product_registered' %}
+                                        <span class="badge badge-success">产品注册</span>
+                                    {% elif audit.activity_type == 'ownership_transfer' %}
+                                        <span class="badge badge-primary">所有权转移</span>
+                                    {% elif audit.activity_type == 'quality_check' %}
+                                        <span class="badge badge-warning">质量检测</span>
+                                    {% elif audit.activity_type == 'logistics_update' %}
+                                        <span class="badge badge-info">物流更新</span>
+                                    {% else %}
+                                        <span class="badge badge-secondary">{{ audit.activity_type }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ audit.actor }}</td>
+                                <td>
+                                    {% if audit.user_role == 'manufacturer' %}
+                                        <span class="badge badge-primary">生产商</span>
+                                    {% elif audit.user_role == 'distributor' %}
+                                        <span class="badge badge-info">经销商</span>
+                                    {% elif audit.user_role == 'consumer' %}
+                                        <span class="badge badge-success">消费者</span>
+                                    {% elif audit.user_role == 'regulator' %}
+                                        <span class="badge badge-warning">监管者</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if audit.product_id %}
+                                        <a href="{{ url_for('regulator.product_detail', product_id=audit.product_id) }}">
+                                            {{ audit.product_id }}
+                                        </a>
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>{{ audit.description }}</td>
+                                <td>{{ audit.ip_address or '-' }}</td>
+                                <td class="hash-text">
+                                    {% if audit.block_hash %}
+                                        {{ audit.block_hash[:16] }}...
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination">
+                    {% if page > 1 %}
+                        <a href="{{ url_for('regulator.audit_trail', page=page-1) }}" class="btn btn-secondary">上一页</a>
+                    {% endif %}
+                    <span class="page-info">第 {{ page }} 页，共 {{ total_pages }} 页</span>
+                    {% if page < total_pages %}
+                        <a href="{{ url_for('regulator.audit_trail', page=page+1) }}" class="btn btn-secondary">下一页</a>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <p>暂无审计记录</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="stats-section">
+            <h2>审计统计</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>今日活动数</h3>
+                    <p class="stat-number">{{ today_activities }}</p>
+                </div>
+                <div class="stat-card">
+                    <h3>本周活动数</h3>
+                    <p class="stat-number">{{ week_activities }}</p>
+                </div>
+                <div class="stat-card">
+                    <h3>本月活动数</h3>
+                    <p class="stat-number">{{ month_activities }}</p>
+                </div>
+                <div class="stat-card">
+                    <h3>总活动数</h3>
+                    <p class="stat-number">{{ total_activities }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

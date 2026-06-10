@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}召回管理 - 管理员{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-exclamation-triangle"></i> 召回管理</h2>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% if recalls %}
+    <div class="row">
+        {% for recall in recalls %}
+        <div class="col-md-6 mb-3">
+            <div class="card {% if recall['severity'] == 'high' %}border-danger{% elif recall['severity'] == 'medium' %}border-warning{% else %}border-info{% endif %}">
+                <div class="card-header {% if recall['severity'] == 'high' %}bg-danger{% elif recall['severity'] == 'medium' %}bg-warning{% else %}bg-info{% endif %} text-white">
+                    <h6 class="mb-0">召回 #{{ recall['id'] }} - {{ recall['severity'].upper() }}</h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2"><strong>原因:</strong> {{ recall['reason'] }}</p>
+                    <p class="mb-2"><strong>产品ID:</strong> <code>{{ recall['product_id'] or '-' }}</code></p>
+                    <p class="mb-2"><strong>批次号:</strong> {{ recall['batch_number'] or '-' }}</p>
+                    <p class="mb-2"><strong>状态:</strong>
+                        <span class="badge bg-success">{{ recall['status'].upper() }}</span>
+                    </p>
+                    <small class="text-muted">
+                        创建于: {{ recall['created_at'] }}
+                    </small>
+                    <div class="mt-3">
+                        <form method="POST" action="{{ url_for('admin.close_recall', recall_id=recall['id']) }}" style="display: inline;">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('确定关闭此召回？')">
+                                <i class="fas fa-times-circle"></i> 关闭召回
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> 暂无活跃召回
+    </div>
+    {% endif %}
+
+    <div class="mt-3">
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> 返回仪表板
+        </a>
+    </div>
+</div>
+{% endblock %}

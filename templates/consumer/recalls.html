@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}产品召回警告 - 消费者{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-exclamation-triangle"></i> 产品召回警告</h2>
+        </div>
+    </div>
+
+    {% if recalls %}
+        {% for recall in recalls %}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <h4 class="alert-heading">
+                <i class="fas fa-exclamation-circle"></i> 产品召回通知
+            </h4>
+            <p class="mb-2">
+                <strong>严重级别:</strong>
+                <span class="badge {% if recall['severity'] == 'high' %}bg-danger{% elif recall['severity'] == 'medium' %}bg-warning{% else %}bg-info{% endif %}">
+                    {{ recall['severity'].upper() }}
+                </span>
+            </p>
+            <p class="mb-2">
+                <strong>召回原因:</strong><br>
+                {{ recall['reason'] }}
+            </p>
+            <p class="mb-0">
+                <strong>时间:</strong> {{ recall['created_at'] }}
+            </p>
+            <hr>
+            <p class="mb-0">
+                <strong>建议:</strong> 请立即停止使用该产品，并联系制造商或销售方进行处理。
+            </p>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> 您持有的产品暂无召回警告，请放心使用。
+        </div>
+    {% endif %}
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-book"></i> 产品召回说明</h5>
+                </div>
+                <div class="card-body">
+                    <h6>什么是产品召回？</h6>
+                    <p>产品召回是指制造商因产品存在安全隐患或质量问题，主动或被迫要求消费者停止使用并退货的行为。</p>
+
+                    <h6 class="mt-3">我应该怎么做？</h6>
+                    <ul>
+                        <li>立即停止使用召回的产品</li>
+                        <li>保留产品和相关凭证</li>
+                        <li>联系制造商或销售方了解退货或置换方案</li>
+                        <li>按照制造商的指示进行处理</li>
+                    </ul>
+
+                    <h6 class="mt-3">我的权益</h6>
+                    <ul>
+                        <li>享受产品退货或置换权</li>
+                        <li>获得赔偿（如适用）</li>
+                        <li>获得关于产品问题的详细信息</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <a href="{{ url_for('consumer.dashboard') }}" class="btn btn-primary">
+                <i class="fas fa-arrow-left"></i> 返回仪表板
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

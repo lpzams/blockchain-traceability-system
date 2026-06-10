@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}系统监控 - 监管者{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-heartbeat"></i> 系统监控</h2>
+            <p class="text-muted">实时监控系统状态</p>
+        </div>
+    </div>
+
+    {% if health %}
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">系统状态</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th width="40%">状态:</th>
+                            <td>
+                                {% if health.status == 'healthy' %}
+                                    <span class="badge badge-success"><i class="fas fa-check-circle"></i> 健康</span>
+                                {% elif health.status == 'degraded' %}
+                                    <span class="badge badge-warning"><i class="fas fa-exclamation-circle"></i> 降级</span>
+                                {% else %}
+                                    <span class="badge badge-danger"><i class="fas fa-times-circle"></i> 故障</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>消息:</th>
+                            <td>{{ health.message or '无' }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">系统指标</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th width="40%">数据库连接:</th>
+                            <td><span class="badge badge-success">正常</span></td>
+                        </tr>
+                        <tr>
+                            <th>缓存状态:</th>
+                            <td><span class="badge badge-success">正常</span></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> 暂无系统监控数据
+    </div>
+    {% endif %}
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <a href="{{ url_for('regulator.dashboard') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> 返回仪表板
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

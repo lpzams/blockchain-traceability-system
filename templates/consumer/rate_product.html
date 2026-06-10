@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>产品评价 - {{ product['product']['name'] }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .rating-container {
+            max-width: 900px;
+            margin: 40px auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        .rating-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .rating-header h1 {
+            margin: 0 0 10px 0;
+            font-size: 28px;
+        }
+
+        .product-info {
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .product-info h2 {
+            margin: 0 0 15px 0;
+            color: #333;
+        }
+
+        .product-meta {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .meta-label {
+            font-weight: 600;
+            color: #666;
+        }
+
+        .rating-summary {
+            padding: 30px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .summary-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .avg-rating {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .avg-number {
+            font-size: 48px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .stars-large {
+            font-size: 24px;
+            color: #ffc107;
+        }
+
+        .rating-count {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .rating-bars {
+            margin-top: 20px;
+        }
+
+        .rating-bar-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .bar-label {
+            width: 60px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .bar-track {
+            flex: 1;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+
+        .bar-count {
+            width: 40px;
+            text-align: right;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .rating-form {
+            padding: 30px;
+        }
+
+        .form-section {
+            margin-bottom: 25px;
+        }
+
+        .form-section label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .star-rating {
+            display: flex;
+            gap: 10px;
+            font-size: 32px;
+        }
+
+        .star {
+            cursor: pointer;
+            color: #ddd;
+            transition: all 0.2s;
+        }
+
+        .star:hover,
+        .star.active {
+            color: #ffc107;
+            transform: scale(1.1);
+        }
+
+        .form-section textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 15px;
+            resize: vertical;
+            min-height: 120px;
+            font-family: inherit;
+        }
+
+        .form-section textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-submit:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .recent-ratings {
+            padding: 30px;
+        }
+
+        .recent-ratings h3 {
+            margin: 0 0 20px 0;
+            color: #333;
+        }
+
+        .rating-item {
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            margin-bottom: 15px;
+        }
+
+        .rating-header-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .rating-user {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .rating-stars {
+            color: #ffc107;
+        }
+
+        .rating-date {
+            color: #999;
+            font-size: 12px;
+        }
+
+        .rating-comment {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .back-link {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .back-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .user-rating-notice {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .user-rating-notice p {
+            margin: 0;
+            color: #1976D2;
+        }
+    </style>
+</head>
+<body>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div style="max-width: 900px; margin: 0 auto 20px;">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}" style="padding: 15px; border-radius: 8px; margin-bottom: 10px; background: {% if category == 'success' %}#d4edda{% elif category == 'danger' %}#f8d7da{% else %}#fff3cd{% endif %}; border: 1px solid {% if category == 'success' %}#c3e6cb{% elif category == 'danger' %}#f5c6cb{% else %}#ffeeba{% endif %};">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <div class="rating-container">
+        <div class="rating-header">
+            <h1>⭐ 产品评价</h1>
+            <p>分享您对该产品的使用体验</p>
+        </div>
+
+        <div class="product-info">
+            <h2>{{ product['product']['name'] }}</h2>
+            <div class="product-meta">
+                <div class="meta-item">
+                    <span class="meta-label">产品ID:</span>
+                    <span>{{ product['product']['id'][:16] }}...</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">批次号:</span>
+                    <span>{{ product['product']['batch_number'] }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">生产商:</span>
+                    <span>{{ product['product']['manufacturer_company'] or product['product']['manufacturer_name'] }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">生产日期:</span>
+                    <span>{{ product['product']['production_date'] }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="rating-summary">
+            <div class="summary-header">
+                <h3>评价统计</h3>
+            </div>
+            <div class="avg-rating">
+                <div class="avg-number">{{ rating_summary['average_rating'] }}</div>
+                <div>
+                    <div class="stars-large">
+                        {% for i in range(5) %}
+                            {% if i < rating_summary['average_rating']|int %}★{% else %}☆{% endif %}
+                        {% endfor %}
+                    </div>
+                    <div class="rating-count">基于 {{ rating_summary['total_ratings'] }} 条评价</div>
+                </div>
+            </div>
+
+            {% if rating_summary['total_ratings'] > 0 %}
+            <div class="rating-bars">
+                {% for star in [5, 4, 3, 2, 1] %}
+                <div class="rating-bar-item">
+                    <div class="bar-label">{{ star }} 星</div>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width: {{ (rating_summary['distribution'][star] / rating_summary['total_ratings'] * 100)|int }}%"></div>
+                    </div>
+                    <div class="bar-count">{{ rating_summary['distribution'][star] }}</div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="rating-form">
+            <h3>{{ '更新您的评价' if user_rating else '发表评价' }}</h3>
+
+            {% if user_rating %}
+            <div class="user-rating-notice">
+                <p>您已对该产品评分 {{ user_rating['rating'] }} 星，可以更新您的评价。</p>
+            </div>
+            {% endif %}
+
+            <form method="POST" id="ratingForm">
+                <div class="form-section">
+                    <label>评分 <span style="color: red;">*</span></label>
+                    <div class="star-rating" id="starRating">
+                        <span class="star" data-value="1">★</span>
+                        <span class="star" data-value="2">★</span>
+                        <span class="star" data-value="3">★</span>
+                        <span class="star" data-value="4">★</span>
+                        <span class="star" data-value="5">★</span>
+                    </div>
+                    <input type="hidden" name="rating" id="ratingValue" value="{{ user_rating['rating'] if user_rating else '' }}" required>
+                </div>
+
+                <div class="form-section">
+                    <label>评价内容（可选）</label>
+                    <textarea name="comment" placeholder="分享您对该产品的使用感受...">{{ user_rating['comment'] if user_rating else '' }}</textarea>
+                </div>
+
+                <button type="submit" class="btn-submit" id="submitBtn" {% if not user_rating %}disabled{% endif %}>
+                    {{ '更新评价' if user_rating else '提交评价' }}
+                </button>
+            </form>
+        </div>
+
+        {% if rating_summary['recent_ratings']|length > 0 %}
+        <div class="recent-ratings">
+            <h3>最近评价</h3>
+            {% for rating in rating_summary['recent_ratings'] %}
+            <div class="rating-item">
+                <div class="rating-header-item">
+                    <div>
+                        <span class="rating-user">{{ rating['username'] }}</span>
+                        <span class="rating-stars">
+                            {% for i in range(5) %}
+                                {% if i < rating['rating'] %}★{% else %}☆{% endif %}
+                            {% endfor %}
+                        </span>
+                    </div>
+                    <div class="rating-date">{{ rating['created_at'][:10] }}</div>
+                </div>
+                {% if rating['comment'] %}
+                <div class="rating-comment">{{ rating['comment'] }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="back-link">
+            <a href="{{ url_for('consumer.trace_result', product_id=product['product']['id']) }}">← 返回产品详情</a>
+        </div>
+    </div>
+
+    <script>
+        const stars = document.querySelectorAll('.star');
+        const ratingValue = document.getElementById('ratingValue');
+        const submitBtn = document.getElementById('submitBtn');
+        let currentRating = {{ user_rating['rating'] if user_rating else 0 }};
+
+        // 初始化星星显示
+        if (currentRating > 0) {
+            updateStars(currentRating);
+        }
+
+        stars.forEach(star => {
+            star.addEventListener('click', function() {
+                currentRating = parseInt(this.dataset.value);
+                ratingValue.value = currentRating;
+                updateStars(currentRating);
+                submitBtn.disabled = false;
+            });
+
+            star.addEventListener('mouseenter', function() {
+                const value = parseInt(this.dataset.value);
+                updateStars(value);
+            });
+        });
+
+        document.getElementById('starRating').addEventListener('mouseleave', function() {
+            updateStars(currentRating);
+        });
+
+        function updateStars(rating) {
+            stars.forEach(star => {
+                const value = parseInt(star.dataset.value);
+                if (value <= rating) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

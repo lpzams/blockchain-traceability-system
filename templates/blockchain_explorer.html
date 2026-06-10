@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+
+{% block title %}产品溯源区块链浏览器{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- 页面标题 -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-cubes"></i> 产品溯源区块链浏览器</h2>
+            <p class="text-muted">查看所有产品的完整溯源链路和交易历史</p>
+        </div>
+    </div>
+
+    <!-- 模式提示 -->
+    {% if blockchain_info and blockchain_info.type == 'product_trace' %}
+    <div class="alert alert-info alert-dismissible fade show mb-4" role="alert">
+        <i class="fas fa-link"></i>
+        <strong>产品溯源链</strong> - 基于产品和交易事件的区块链浏览器
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endif %}
+
+    <!-- 统计面板 -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="text-muted mb-2"><i class="fas fa-box"></i> 产品总数</h5>
+                    <h2 class="text-primary">{{ total_products }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="text-muted mb-2"><i class="fas fa-exchange-alt"></i> 交易总数</h5>
+                    <h2 class="text-success">{{ total_events }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="text-muted mb-2"><i class="fas fa-cube"></i> 区块总数</h5>
+                    <h2 class="text-info">{{ total_blocks }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="text-muted mb-2"><i class="fas fa-arrow-up"></i> 最新区块</h5>
+                    <h2 class="text-warning">#{{ latest_block.height if latest_block else 0 }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 搜索框 -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="input-group">
+                        <input type="text" id="productSearch" class="form-control"
+                               placeholder="输入产品ID、名称或批次号...">
+                        <button class="btn btn-primary" onclick="searchProducts()">
+                            <i class="fas fa-search"></i> 搜索
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 产品区块列表 -->
+    <div class="row">
+        <div class="col-md-12">
+            {% if blocks %}
+                {% for block in blocks %}
+                <div class="card mb-3 product-block">
+                    <div class="card-header bg-gradient text-white">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-cube"></i>
+                                    {{ block.product_name }}
+                                    <span class="badge badge-light">{{ block.batch_number }}</span>
+                                </h5>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <small class="text-white-50">
+                                    区块 #{{ block.height }} | {{ block.tx_count }} 个事件
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- 产品信息 -->
+                            <div class="col-md-6">
+                                <h6 class="text-primary mb-3"><i class="fas fa-info-circle"></i> 产品信息</h6>
+                                <dl class="row">
+                                    <dt class="col-sm-4">产品ID:</dt>
+                                    <dd class="col-sm-8"><code style="font-size: 11px;">{{ block.product_id }}</code></dd>
+
+                                    <dt class="col-sm-4">生产商:</dt>
+                                    <dd class="col-sm-8">{{ block.manufacturer }}</dd>
+
+                                    <dt class="col-sm-4">当前所有者:</dt>
+                                    <dd class="col-sm-8">{{ block.current_owner }}</dd>
+
+                                    <dt class="col-sm-4">创建时间:</dt>
+                                    <dd class="col-sm-8">{{ block.created_at }}</dd>
+                                </dl>
+                            </div>
+
+                            <!-- 区块哈希 -->
+                            <div class="col-md-6">
+                                <h6 class="text-primary mb-3"><i class="fas fa-fingerprint"></i> 区块信息</h6>
+                                <div class="mb-3">
+                                    <small class="text-muted">当前区块哈希</small>
+                                    <div class="input-group input-group-sm">
+                                        <input type="text" class="form-control" value="{{ block.hash }}" readonly>
+                                        <button class="btn btn-outline-primary" onclick="copyText('{{ block.hash }}')">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <small class="text-muted">前一区块哈希</small>
+                                    <div class="input-group input-group-sm">
+                                        <input type="text" class="form-control" value="{{ block.prev_hash }}" readonly>
+                                        <button class="btn btn-outline-primary" onclick="copyText('{{ block.prev_hash }}')">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 交易事件 -->
+                        {% if block.transactions %}
+                        <div class="row mt-4">
+                            <div class="col-md-12">
+                                <h6 class="text-success mb-3"><i class="fas fa-exchange-alt"></i> 交易历史 ({{ block.tx_count }})</h6>
+                                <div class="timeline">
+                                    {% for event in block.transactions %}
+                                    <div class="timeline-item">
+                                        <div class="timeline-marker {% if event.event_type == 'transfer' %}bg-primary{% elif event.event_type == 'quality_check' %}bg-success{% elif event.event_type == 'logistics' %}bg-info{% else %}bg-secondary{% endif %}">
+                                            <i class="fas fa-circle"></i>
+                                        </div>
+                                        <div class="timeline-content">
+                                            <h6 class="mb-1">
+                                                {% if event.event_type == 'transfer' %}
+                                                    <i class="fas fa-arrow-right"></i> 所有权转移
+                                                {% elif event.event_type == 'quality_check' %}
+                                                    <i class="fas fa-check-circle"></i> 质检记录
+                                                {% elif event.event_type == 'logistics' %}
+                                                    <i class="fas fa-truck"></i> 物流更新
+                                                {% else %}
+                                                    <i class="fas fa-cube"></i> 产品注册
+                                                {% endif %}
+                                            </h6>
+                                            <p class="text-muted mb-1">
+                                                {% if event.from_username %}
+                                                    从: <strong>{{ event.from_username }}</strong> ({{ event.from_company }})
+                                                {% endif %}
+                                                {% if event.to_username %}
+                                                    → 到: <strong>{{ event.to_username }}</strong> ({{ event.to_company }})
+                                                {% endif %}
+                                            </p>
+                                            {% if event.location %}
+                                            <p class="text-muted mb-1">
+                                                <i class="fas fa-map-marker-alt"></i> {{ event.location }}
+                                            </p>
+                                            {% endif %}
+                                            <small class="text-muted">
+                                                {{ event.created_at }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-inbox"></i> 暂无产品数据
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .product-block {
+        border-left: 4px solid #667eea;
+        transition: all 0.3s;
+    }
+
+    .product-block:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .timeline {
+        position: relative;
+    }
+
+    .timeline-item {
+        padding-left: 40px;
+        margin-bottom: 20px;
+        position: relative;
+    }
+
+    .timeline-marker {
+        position: absolute;
+        left: 0;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 10px;
+    }
+
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: 11px;
+        top: 24px;
+        width: 2px;
+        height: 20px;
+        background-color: #e9ecef;
+    }
+
+    .timeline-item:last-child::before {
+        display: none;
+    }
+
+    .bg-gradient {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    code {
+        word-break: break-all;
+    }
+</style>
+
+<script>
+function searchProducts() {
+    const query = document.getElementById('productSearch').value.toLowerCase();
+    const blocks = document.querySelectorAll('.product-block');
+
+    blocks.forEach(block => {
+        const text = block.textContent.toLowerCase();
+        block.style.display = text.includes(query) ? 'block' : 'none';
+    });
+}
+
+function copyText(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        alert('已复制到剪贴板');
+    });
+}
+
+// 支持回车搜索
+document.getElementById('productSearch').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        searchProducts();
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>产品查询 - 消费者</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/consumer.css') }}">
+    <style>
+        body {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .query-container {
+            max-width: 700px;
+            margin: 60px auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        .query-header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .query-header h1 {
+            margin: 0 0 10px 0;
+            font-size: 32px;
+            font-weight: 600;
+        }
+
+        .query-header p {
+            margin: 0;
+            opacity: 0.95;
+            font-size: 16px;
+        }
+
+        .query-form {
+            padding: 40px;
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .search-box label {
+            display: block;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: #333;
+            font-size: 15px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 16px 20px 16px 50px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 4px rgba(79, 172, 254, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 18px;
+            top: 50px;
+            color: #999;
+            font-size: 20px;
+        }
+
+        .btn-search {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-search:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 172, 254, 0.4);
+        }
+
+        .features-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 30px 40px 40px;
+            background: #f8f9fa;
+        }
+
+        .feature-item {
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            transition: transform 0.3s;
+        }
+
+        .feature-item:hover {
+            transform: translateY(-3px);
+        }
+
+        .feature-icon {
+            font-size: 40px;
+            margin-bottom: 12px;
+        }
+
+        .feature-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .feature-desc {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .back-link {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .back-link a {
+            color: #4facfe;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+
+        .navbar-simple {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 30px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 700px;
+            margin: 0 auto 20px;
+        }
+
+        .navbar-simple .brand {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .navbar-simple .nav-links a {
+            margin-left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .navbar-simple .nav-links a:hover {
+            color: #4facfe;
+        }
+
+        @media (max-width: 768px) {
+            .features-section {
+                grid-template-columns: 1fr;
+            }
+
+            .query-form {
+                padding: 30px 20px;
+            }
+
+            .features-section {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar-simple">
+        <div class="brand">🔍 产品溯源查询</div>
+        <div class="nav-links">
+            {% if session.user_id %}
+                <a href="{{ url_for('consumer.dashboard') if session.role == 'consumer' else url_for('index') }}">首页</a>
+                <a href="{{ url_for('auth.logout') }}">退出</a>
+            {% else %}
+                <a href="{{ url_for('index') }}">首页</a>
+                <a href="{{ url_for('auth.login') }}">登录</a>
+            {% endif %}
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div style="max-width: 700px; margin: 0 auto 20px;">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <div class="query-container">
+        <div class="query-header">
+            <h1>🔍 产品溯源查询</h1>
+            <p>输入产品ID，查询完整的溯源信息</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('consumer.query') }}" class="query-form">
+            <div class="search-box">
+                <label for="product_id">产品ID</label>
+                <span class="search-icon">🔎</span>
+                <input
+                    type="text"
+                    id="product_id"
+                    name="product_id"
+                    placeholder="输入产品ID或批次号（如: 001）"
+                    required
+                    autocomplete="off">
+            </div>
+
+            <button type="submit" class="btn-search">查询溯源信息</button>
+        </form>
+
+        <div class="features-section">
+            <div class="feature-item">
+                <div class="feature-icon">📜</div>
+                <div class="feature-title">完整历史</div>
+                <div class="feature-desc">查看产品从生产到流通的完整记录</div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">🛡️</div>
+                <div class="feature-title">真伪验证</div>
+                <div class="feature-desc">基于区块链技术验证产品真实性</div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">🏭</div>
+                <div class="feature-title">生产信息</div>
+                <div class="feature-desc">获取产品的生产商和生产日期</div>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">🚚</div>
+                <div class="feature-title">物流追踪</div>
+                <div class="feature-desc">追踪产品的完整物流路径</div>
+            </div>
+        </div>
+
+        <div class="back-link">
+            <a href="{{ url_for('index') }}">← 返回首页</a>
+        </div>
+    </div>
+
+    {% if all_products %}
+    <div style="max-width: 700px; margin: 20px auto; background: white; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); overflow: hidden;">
+        <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 20px 30px;">
+            <h2 style="margin: 0; font-size: 20px;">📦 所有产品</h2>
+            <p style="margin: 5px 0 0; opacity: 0.9; font-size: 14px;">点击任意产品可直接查看溯源信息</p>
+        </div>
+        <div style="padding: 20px;">
+            {% for product in all_products %}
+            <a href="{{ url_for('consumer.trace_result', product_id=product['product_id']) }}"
+               style="display: flex; align-items: center; justify-content: space-between; padding: 15px; margin-bottom: 10px; background: #f8f9fa; border-radius: 10px; text-decoration: none; color: inherit; border: 2px solid transparent; transition: all 0.2s;"
+               onmouseover="this.style.borderColor='#4facfe'; this.style.background='#f0f8ff'"
+               onmouseout="this.style.borderColor='transparent'; this.style.background='#f8f9fa'">
+                <div>
+                    <div style="font-weight: 600; font-size: 16px; color: #333;">{{ product['name'] }}</div>
+                    <div style="font-size: 13px; color: #888; margin-top: 4px;">
+                        批次号: <strong>{{ product['batch_number'] }}</strong>
+                        &nbsp;·&nbsp; {{ product['manufacturer_company'] or product['manufacturer_name'] }}
+                        &nbsp;·&nbsp; {{ product['production_date'] }}
+                    </div>
+                </div>
+                <span style="font-size: 20px; color: #4facfe;">→</span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</body>
+</html>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script src="{{ url_for('static', filename='js/consumer.js') }}"></script>

@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}转移产品 - 生产商{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card shadow-lg">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0"><i class="fas fa-exchange-alt"></i> 转移产品给经销商</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('manufacturer.transfer_product') }}">
+                    <div class="mb-3">
+                        <label for="product_id" class="form-label">选择产品 *</label>
+                        <select class="form-select" id="product_id" name="product_id" required>
+                            <option value="">请选择产品</option>
+                            {% for product in products %}
+                                <option value="{{ product['product_id'] }}">
+                                    {{ product['name'] }} - 批次号: {{ product['batch_number'] }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        {% if not products %}
+                            <div class="alert alert-info mt-2">
+                                <i class="fas fa-info-circle"></i> 您还没有注册任何产品，请先注册产品
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="to_user_id" class="form-label">转移给 *</label>
+                        <select class="form-select" id="to_user_id" name="to_user_id" required>
+                            <option value="">请选择接收方</option>
+                            {% for user in users %}
+                                <option value="{{ user['id'] }}">
+                                    {{ user['username'] }} ({{ user['company_name'] or '个人' }} - {{ user['role'] }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="location" class="form-label">转移地点（可选）</label>
+                        <input type="text" class="form-control" id="location" name="location"
+                               placeholder="例如: 上海仓库">
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>提示：</strong>产品转移后，新的所有者将能够看到该产品，并可以继续进行转移、质检等操作。此操作将被记录在区块链上。
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success" {% if not products %}disabled{% endif %}>
+                            <i class="fas fa-check"></i> 确认转移
+                        </button>
+                        <a href="{{ url_for('manufacturer.dashboard') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> 返回
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-question-circle"></i> 关于产品转移</h5>
+            </div>
+            <div class="card-body">
+                <ul class="mb-0">
+                    <li>生产商可以将产品转移给经销商或最终消费者</li>
+                    <li>转移后，产品的所有权将属于新的所有者</li>
+                    <li>所有权转移将被记录在区块链上，无法篡改</li>
+                    <li>新所有者可以继续转移产品或进行其他操作</li>
+                    <li>转移地点信息有助于追踪产品物流流向</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

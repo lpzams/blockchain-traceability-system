@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}添加质检记录 - 生产商{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card shadow-lg">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-flask"></i> 添加质检记录</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('manufacturer.quality_check') }}">
+                    <div class="mb-3">
+                        <label for="product_id" class="form-label">选择产品 *</label>
+                        <select class="form-select" id="product_id" name="product_id" required>
+                            <option value="">请选择产品</option>
+                            {% for product in products %}
+                                <option value="{{ product['product_id'] }}">
+                                    {{ product['name'] }} - 批次号: {{ product['batch_number'] }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        {% if not products %}
+                            <div class="alert alert-info mt-2">
+                                <i class="fas fa-info-circle"></i> 您还没有注册任何产品，请先注册产品
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="result" class="form-label">质检结果 *</label>
+                        <select class="form-select" id="result" name="result" required>
+                            <option value="">请选择</option>
+                            <option value="合格">合格</option>
+                            <option value="不合格">不合格</option>
+                            <option value="需改进">需改进</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">质检说明</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="4"
+                                  placeholder="请输入质检详细说明（可选）"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="use_async" name="use_async">
+                            <label class="form-check-label" for="use_async">
+                                异步处理（适合批量质检）
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary" {% if not products %}disabled{% endif %}>
+                            <i class="fas fa-save"></i> 提交质检记录
+                        </button>
+                        <a href="{{ url_for('manufacturer.dashboard') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> 返回
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-info-circle"></i> 质检说明</h5>
+            </div>
+            <div class="card-body">
+                <ul class="mb-0">
+                    <li><strong>合格：</strong>产品完全符合质量标准</li>
+                    <li><strong>不合格：</strong>产品存在严重质量问题，不能销售</li>
+                    <li><strong>需改进：</strong>产品基本符合标准，但有轻微问题需要改进</li>
+                    <li>所有质检记录都将被记录在区块链上，不可篡改</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

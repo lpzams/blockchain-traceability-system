@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>产品溯源区块链系统</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .index-navbar {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .index-navbar .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .index-navbar .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .index-navbar .nav-links a {
+            margin-left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .index-navbar .nav-links a:hover {
+            color: #667eea;
+        }
+
+        .hero-section {
+            text-align: center;
+            padding: 80px 20px;
+            color: white;
+        }
+
+        .hero-section h1 {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .hero-section p {
+            font-size: 20px;
+            margin-bottom: 40px;
+            opacity: 0.95;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-hero {
+            padding: 16px 40px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-hero-primary {
+            background: white;
+            color: #667eea;
+        }
+
+        .btn-hero-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-hero-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-hero-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .features-section {
+            background: white;
+            padding: 80px 20px;
+        }
+
+        .features-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .features-title {
+            text-align: center;
+            font-size: 32px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 50px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+
+        .feature-card {
+            text-align: center;
+            padding: 30px;
+            border-radius: 12px;
+            background: #f8f9fa;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .feature-card h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .feature-card p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .roles-section {
+            background: #f8f9fa;
+            padding: 80px 20px;
+        }
+
+        .roles-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .roles-title {
+            text-align: center;
+            font-size: 32px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 50px;
+        }
+
+        .roles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .role-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .role-header {
+            padding: 20px;
+            color: white;
+            font-size: 20px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .role-header.manufacturer {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .role-header.distributor {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .role-header.consumer {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .role-body {
+            padding: 30px;
+        }
+
+        .role-body ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .role-body li {
+            padding: 10px 0;
+            color: #666;
+            border-bottom: 1px solid #eee;
+        }
+
+        .role-body li:last-child {
+            border-bottom: none;
+        }
+
+        .role-body li:before {
+            content: "✓";
+            color: #4caf50;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .hero-section h1 {
+                font-size: 32px;
+            }
+
+            .hero-section p {
+                font-size: 16px;
+            }
+
+            .features-grid,
+            .roles-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="index-navbar">
+        <div class="container">
+            <div class="logo">⛓️ 区块链溯源系统</div>
+            <div class="nav-links">
+                {% if session.user_id %}
+                    {% if session.role == 'manufacturer' %}
+                        <a href="{{ url_for('manufacturer.dashboard') }}">仪表盘</a>
+                    {% elif session.role == 'distributor' %}
+                        <a href="{{ url_for('distributor.dashboard') }}">仪表盘</a>
+                    {% else %}
+                        <a href="{{ url_for('consumer.query') }}">查询产品</a>
+                    {% endif %}
+                    <a href="{{ url_for('blockchain_explorer') }}">区块链浏览器</a>
+                    <a href="{{ url_for('auth.logout') }}">退出</a>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}">登录</a>
+                    <a href="{{ url_for('auth.register') }}">注册</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div style="max-width: 1200px; margin: 20px auto; padding: 0 20px;">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <section class="hero-section">
+        <h1>🔗 产品溯源区块链系统</h1>
+        <p>基于区块链技术的产品全生命周期追溯平台</p>
+        <div class="hero-buttons">
+            {% if session.user_id %}
+                {% if session.role == 'manufacturer' %}
+                    <a href="{{ url_for('manufacturer.dashboard') }}" class="btn-hero btn-hero-primary">进入仪表盘</a>
+                {% elif session.role == 'distributor' %}
+                    <a href="{{ url_for('distributor.dashboard') }}" class="btn-hero btn-hero-primary">进入仪表盘</a>
+                {% else %}
+                    <a href="{{ url_for('consumer.query') }}" class="btn-hero btn-hero-primary">查询产品</a>
+                {% endif %}
+                <a href="{{ url_for('blockchain_explorer') }}" class="btn-hero btn-hero-secondary">区块链浏览器</a>
+            {% else %}
+                <a href="{{ url_for('auth.login') }}" class="btn-hero btn-hero-primary">登录系统</a>
+                <a href="{{ url_for('auth.register') }}" class="btn-hero btn-hero-secondary">注册账号</a>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="features-section">
+        <div class="features-container">
+            <h2 class="features-title">核心特性</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3>数据不可篡改</h3>
+                    <p>使用SHA-256哈希算法和区块链链式结构，确保所有数据一旦上链就无法被篡改，保证信息的真实性和可靠性</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔍</div>
+                    <h3>全程可追溯</h3>
+                    <p>记录产品从生产、流通到消费的完整路径，每一个环节都有详细记录，实现真正的全生命周期追溯</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">✅</div>
+                    <h3>真伪快速验证</h3>
+                    <p>通过区块链技术验证产品真实性，消费者可以快速查询产品信息，有效防止假冒伪劣商品流通</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="roles-section">
+        <div class="roles-container">
+            <h2 class="roles-title">面向不同角色的功能</h2>
+            <div class="roles-grid">
+                <div class="role-card">
+                    <div class="role-header manufacturer">🏭 生产商</div>
+                    <div class="role-body">
+                        <ul>
+                            <li>产品注册上链</li>
+                            <li>质量检验记录</li>
+                            <li>生产信息管理</li>
+                            <li>产品流转追踪</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="role-card">
+                    <div class="role-header distributor">🚚 经销商</div>
+                    <div class="role-body">
+                        <ul>
+                            <li>产品转移记录</li>
+                            <li>物流信息管理</li>
+                            <li>库存实时追踪</li>
+                            <li>流转历史查询</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="role-card">
+                    <div class="role-header consumer">👤 消费者</div>
+                    <div class="role-body">
+                        <ul>
+                            <li>产品溯源查询</li>
+                            <li>真伪快速验证</li>
+                            <li>流转历史查看</li>
+                            <li>质量信息获取</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

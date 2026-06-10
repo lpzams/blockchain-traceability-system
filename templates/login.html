@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - 产品溯源区块链系统</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 420px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .login-header {
+            background: white;
+            padding: 40px 40px 30px;
+            text-align: center;
+        }
+
+        .login-header h1 {
+            margin: 0 0 10px 0;
+            font-size: 28px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .login-header p {
+            margin: 0;
+            color: #999;
+            font-size: 14px;
+        }
+
+        .login-form {
+            padding: 0 40px 40px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .login-footer {
+            text-align: center;
+            padding: 20px 40px;
+            background: #f8f9fa;
+            border-top: 1px solid #eee;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .login-footer a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .login-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .alert {
+            margin: 0 40px 20px;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .system-features {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .system-features h3 {
+            font-size: 14px;
+            color: #999;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .features-list {
+            display: flex;
+            justify-content: space-around;
+            gap: 10px;
+        }
+
+        .feature-item {
+            text-align: center;
+            flex: 1;
+        }
+
+        .feature-item span {
+            display: block;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .feature-item p {
+            margin: 0;
+            font-size: 12px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h1>🔐 欢迎登录</h1>
+            <p>产品溯源区块链系统</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('auth.login') }}" class="login-form">
+            <div class="form-group">
+                <label for="username">用户名</label>
+                <input type="text" id="username" name="username" required placeholder="请输入用户名" autocomplete="username">
+            </div>
+
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password" id="password" name="password" required placeholder="请输入密码" autocomplete="current-password">
+            </div>
+
+            <button type="submit" class="btn-login">登录</button>
+
+            <div class="system-features">
+                <h3>系统特性</h3>
+                <div class="features-list">
+                    <div class="feature-item">
+                        <span>🔒</span>
+                        <p>数据安全</p>
+                    </div>
+                    <div class="feature-item">
+                        <span>⛓️</span>
+                        <p>区块链</p>
+                    </div>
+                    <div class="feature-item">
+                        <span>🔍</span>
+                        <p>可追溯</p>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <div class="login-footer">
+            还没有账号？ <a href="{{ url_for('auth.register') }}">立即注册</a>
+        </div>
+    </div>
+</body>
+</html>

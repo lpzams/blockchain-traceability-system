@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>产品对比 - 消费者</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .compare-container {
+            max-width: 1400px;
+            margin: 40px auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        .compare-header {
+            background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .compare-header h1 {
+            margin: 0 0 10px 0;
+            font-size: 28px;
+        }
+
+        .input-section {
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .input-form {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .product-input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .product-input:focus {
+            outline: none;
+            border-color: #30cfd0;
+        }
+
+        .btn-remove {
+            padding: 12px 20px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-remove:hover {
+            background: #c82333;
+        }
+
+        .btn-add-more {
+            width: 100%;
+            padding: 12px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .btn-add-more:hover {
+            background: #218838;
+        }
+
+        .btn-add-more:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .btn-compare {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-compare:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(48, 207, 208, 0.4);
+        }
+
+        .btn-compare:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .comparison-content {
+            padding: 30px;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            overflow-x: auto;
+            display: block;
+        }
+
+        .comparison-table thead {
+            background: #f8f9fa;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 15px;
+            text-align: left;
+            border: 1px solid #e9ecef;
+        }
+
+        .comparison-table th {
+            font-weight: 600;
+            color: #333;
+            white-space: nowrap;
+        }
+
+        .comparison-table td {
+            color: #666;
+        }
+
+        .product-column {
+            min-width: 250px;
+        }
+
+        .row-label {
+            font-weight: 600;
+            background: #f8f9fa;
+            min-width: 180px;
+        }
+
+        .rating-display {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stars {
+            color: #ffc107;
+        }
+
+        .rating-number {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .rating-count {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .stat-number {
+            font-size: 18px;
+            font-weight: 600;
+            color: #30cfd0;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+
+        .back-link {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .back-link a {
+            color: #30cfd0;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .help-text {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .comparison-table {
+                font-size: 12px;
+            }
+
+            .comparison-table th,
+            .comparison-table td {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div style="max-width: 1400px; margin: 0 auto 20px;">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}" style="padding: 15px; border-radius: 8px; margin-bottom: 10px; background: {% if category == 'success' %}#d4edda{% elif category == 'danger' %}#f8d7da{% else %}#fff3cd{% endif %}; border: 1px solid {% if category == 'success' %}#c3e6cb{% elif category == 'danger' %}#f5c6cb{% else %}#ffeeba{% endif %};">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <div class="compare-container">
+        <div class="compare-header">
+            <h1>⚖️ 产品对比</h1>
+            <p>对比多个产品的溯源信息和评价数据</p>
+        </div>
+
+        <div class="input-section">
+            <form method="GET" class="input-form" id="compareForm">
+                <div class="help-text">
+                    💡 提示：输入2-5个产品ID进行对比
+                </div>
+
+                <div id="inputContainer">
+                    <div class="input-group">
+                        <input type="text" name="products" class="product-input" placeholder="产品ID 1" required>
+                        <button type="button" class="btn-remove" onclick="removeInput(this)" style="display: none;">删除</button>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" name="products" class="product-input" placeholder="产品ID 2" required>
+                        <button type="button" class="btn-remove" onclick="removeInput(this)" style="display: none;">删除</button>
+                    </div>
+                </div>
+
+                <button type="button" class="btn-add-more" id="addMoreBtn" onclick="addInput()">
+                    ➕ 添加更多产品
+                </button>
+
+                <button type="submit" class="btn-compare">
+                    开始对比
+                </button>
+            </form>
+        </div>
+
+        {% if comparison_data %}
+        <div class="comparison-content">
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th class="row-label">对比项</th>
+                        {% for item in comparison_data['products'] %}
+                        <th class="product-column">产品 {{ loop.index }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="row-label">产品名称</td>
+                        {% for item in comparison_data['products'] %}
+                        <td>{{ item['product']['name'] }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td class="row-label">产品ID</td>
+                        {% for item in comparison_data['products'] %}
+                        <td style="font-size: 11px; font-family: monospace;">{{ item['product']['product_id'][:20] }}...</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td class="row-label">批次号</td>
+                        {% for item in comparison_data['products'] %}
+                        <td>{{ item['product']['batch_number'] }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td class="row-label">生产商</td>
+                        {% for item in comparison_data['products'] %}
+                        <td>{{ item['product']['manufacturer_company'] or item['product']['manufacturer_name'] }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td class="row-label">生产日期</td>
+                        {% for item in comparison_data['products'] %}
+                        <td>{{ item['product']['production_date'] }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td class="row-label">当前拥有者</td>
+                        {% for item in comparison_data['products'] %}
+                        <td>{{ item['product']['owner_company'] or item['product']['owner_name'] }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr style="background: #f8f9fa;">
+                        <td class="row-label">平均评分</td>
+                        {% for item in comparison_data['products'] %}
+                        <td>
+                            <div class="rating-display">
+                                <span class="rating-number">{{ item['rating_summary']['average_rating'] }}</span>
+                                <span class="stars">
+                                    {% for i in range(5) %}
+                                        {% if i < item['rating_summary']['average_rating']|int %}★{% else %}☆{% endif %}
+                                    {% endfor %}
+                                </span>
+                                <span class="rating-count">({{ item['rating_summary']['total_ratings'] }})</span>
+                            </div>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    <tr style="background: #f8f9fa;">
+                        <td class="row-label">总事件数</td>
+                        {% for item in comparison_data['products'] %}
+                        <td><span class="stat-number">{{ item['event_stats']['total_events'] }}</span></td>
+                        {% endfor %}
+                    </tr>
+                    <tr style="background: #f8f9fa;">
+                        <td class="row-label">流转次数</td>
+                        {% for item in comparison_data['products'] %}
+                        <td><span class="stat-number">{{ item['event_stats']['transfers'] }}</span></td>
+                        {% endfor %}
+                    </tr>
+                    <tr style="background: #f8f9fa;">
+                        <td class="row-label">质检次数</td>
+                        {% for item in comparison_data['products'] %}
+                        <td><span class="stat-number">{{ item['event_stats']['quality_checks'] }}</span></td>
+                        {% endfor %}
+                    </tr>
+                    <tr style="background: #f8f9fa;">
+                        <td class="row-label">物流更新</td>
+                        {% for item in comparison_data['products'] %}
+                        <td><span class="stat-number">{{ item['event_stats']['logistics_updates'] }}</span></td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td class="row-label">操作</td>
+                        {% for item in comparison_data['products'] %}
+                        <td>
+                            <a href="{{ url_for('consumer.trace_result', product_id=item['product']['product_id']) }}"
+                               style="color: #30cfd0; text-decoration: none; font-weight: 600;">
+                                查看详情 →
+                            </a>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="comparison-content">
+            <div class="empty-state">
+                <div class="empty-state-icon">📊</div>
+                <h3>输入产品ID开始对比</h3>
+                <p>在上方输入框中填入2-5个产品ID，点击"开始对比"按钮</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="back-link">
+            <a href="{{ url_for('consumer.dashboard') }}">← 返回控制台</a>
+        </div>
+    </div>
+
+    <script>
+        let inputCount = 2;
+        const maxInputs = 5;
+
+        function addInput() {
+            if (inputCount >= maxInputs) {
+                alert('最多只能对比5个产品');
+                return;
+            }
+
+            const container = document.getElementById('inputContainer');
+            const inputGroup = document.createElement('div');
+            inputGroup.className = 'input-group';
+            inputGroup.innerHTML = `
+                <input type="text" name="products" class="product-input" placeholder="产品ID ${inputCount + 1}" required>
+                <button type="button" class="btn-remove" onclick="removeInput(this)">删除</button>
+            `;
+            container.appendChild(inputGroup);
+
+            inputCount++;
+            updateAddButton();
+            updateRemoveButtons();
+        }
+
+        function removeInput(btn) {
+            if (inputCount <= 2) {
+                alert('至少需要2个产品进行对比');
+                return;
+            }
+
+            btn.parentElement.remove();
+            inputCount--;
+            updateAddButton();
+            updateRemoveButtons();
+        }
+
+        function updateAddButton() {
+            const addBtn = document.getElementById('addMoreBtn');
+            addBtn.disabled = inputCount >= maxInputs;
+        }
+
+        function updateRemoveButtons() {
+            const removeButtons = document.querySelectorAll('.btn-remove');
+            removeButtons.forEach(btn => {
+                btn.style.display = inputCount > 2 ? 'block' : 'none';
+            });
+        }
+
+        // 初始化
+        updateAddButton();
+        updateRemoveButtons();
+    </script>
+</body>
+</html>

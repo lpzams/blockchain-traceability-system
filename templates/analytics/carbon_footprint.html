@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+
+{% block title %}碳足迹分析{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-leaf"></i> 碳足迹分析</h2>
+            <p class="text-muted">产品全链路碳排放追踪和ESG评估</p>
+        </div>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-danger">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <!-- 总碳排放 -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card bg-gradient text-white">
+                <div class="card-body text-center" style="padding: 40px;">
+                    <h5 class="text-white-50">系统总碳排放量</h5>
+                    <h1 class="mb-0">{{ analysis.total_carbon }} kg CO₂</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 碳排放统计 -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar"></i> 按事件类型分类</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="carbonByType"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-line-chart"></i> 碳排放趋势</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="carbonTrend"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 排放最多的产品 -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-industry"></i> 碳排放排名 TOP 10</h5>
+                </div>
+                <div class="card-body">
+                    {% if analysis.by_product %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 5%;">排名</th>
+                                    <th>产品ID</th>
+                                    <th>事件类型</th>
+                                    <th>碳排放(kg)</th>
+                                    <th>事件数</th>
+                                    <th>进度条</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in analysis.by_product %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-danger">{{ loop.index }}</span>
+                                    </td>
+                                    <td><code>{{ item.product_id[:16] }}...</code></td>
+                                    <td>{{ item.event_type }}</td>
+                                    <td>{{ item.co2_kg }}</td>
+                                    <td>{{ item.event_count }}</td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar bg-danger"
+                                                 role="progressbar"
+                                                 style="width: {{ (item.co2_kg / analysis.total_carbon * 100) if analysis.total_carbon > 0 else 0 }}%"
+                                                 aria-valuenow="{{ (item.co2_kg / analysis.total_carbon * 100) if analysis.total_carbon > 0 else 0 }}"
+                                                 aria-valuemin="0"
+                                                 aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-inbox"></i> 暂无碳足迹数据
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ESG 建议 -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <h5 class="alert-heading"><i class="fas fa-leaf"></i> ESG 建议</h5>
+                <ul class="mb-0">
+                    <li>定期监测供应链碳排放，制定减排目标</li>
+                    <li>优化物流路线，减少运输环节和距离</li>
+                    <li>采用清洁能源，支持绿色供应链建设</li>
+                    <li>与供应商合作，共同推进碳中和目标</li>
+                    <li>透明公布碳足迹数据，提高品牌价值</li>
+                </ul>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> 返回
+        </a>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const analysis = {{ analysis | tojson }};
+
+    // 按事件类型分类
+    const typeLabels = Object.keys(analysis.by_event_type);
+    const typeValues = Object.values(analysis.by_event_type);
+
+    const ctx1 = document.getElementById('carbonByType').getContext('2d');
+    new Chart(ctx1, {
+        type: 'doughnut',
+        data: {
+            labels: typeLabels,
+            datasets: [{
+                data: typeValues,
+                backgroundColor: [
+                    '#ff6384',
+                    '#36a2eb',
+                    '#ffce56',
+                    '#4bc0c0'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                }
+            }
+        }
+    });
+
+    // 碳排放趋势
+    const trend = analysis.carbon_trend || [];
+    const trendLabels = trend.map(t => t.date);
+    const trendValues = trend.map(t => t.co2);
+
+    const ctx2 = document.getElementById('carbonTrend').getContext('2d');
+    new Chart(ctx2, {
+        type: 'line',
+        data: {
+            labels: trendLabels,
+            datasets: [{
+                label: '每日碳排放(kg)',
+                data: trendValues,
+                borderColor: '#28a745',
+                backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                }
+            }
+        }
+    });
+});
+</script>
+
+<style>
+    .bg-gradient {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+</style>
+{% endblock %}

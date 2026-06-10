@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>产品详情 - 产品溯源系统</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">产品溯源区块链系统</div>
+        <div class="nav-menu">
+            <a href="{{ url_for('manufacturer.dashboard') }}">我的产品</a>
+            <a href="{{ url_for('manufacturer.register_product_page') }}">注册新产品</a>
+            <a href="{{ url_for('blockchain_explorer') }}">区块链浏览器</a>
+            <a href="{{ url_for('auth.logout') }}">退出登录</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>产品详情</h1>
+            <div class="header-actions">
+                <a href="{{ url_for('manufacturer.transfer_product') }}" class="btn btn-info">转移产品</a>
+                <a href="{{ url_for('manufacturer.quality_check') }}" class="btn btn-primary">添加质检记录</a>
+                <a href="{{ url_for('manufacturer.dashboard') }}" class="btn btn-secondary">返回列表</a>
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="detail-grid">
+            <div class="detail-card">
+                <h2>基本信息</h2>
+                <div class="info-group">
+                    <label>产品ID:</label>
+                    <span class="hash-value">{{ product['product_id'] }}</span>
+                </div>
+                <div class="info-group">
+                    <label>产品名称:</label>
+                    <span>{{ product['name'] }}</span>
+                </div>
+                <div class="info-group">
+                    <label>批次号:</label>
+                    <span class="badge badge-info">{{ product['batch_number'] or '无' }}</span>
+                </div>
+                <div class="info-group">
+                    <label>生产日期:</label>
+                    <span>{{ product['production_date'] or '未填写' }}</span>
+                </div>
+            </div>
+
+            <div class="detail-card">
+                <h2>所有权信息</h2>
+                <div class="info-group">
+                    <label>生产商:</label>
+                    <span>{{ product['manufacturer_company'] or product['manufacturer_name'] }}</span>
+                </div>
+                <div class="info-group">
+                    <label>当前所有者:</label>
+                    <span>
+                        {% if product['current_owner_id'] == current_user['id'] %}
+                            <span class="badge badge-success">我</span>
+                        {% else %}
+                            {{ product['owner_company'] or product['owner_name'] or '未知' }}
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="info-group">
+                    <label>所有权状态:</label>
+                    <span>
+                        {% if product['current_owner_id'] == current_user['id'] %}
+                            <span class="badge badge-primary">持有中</span>
+                        {% else %}
+                            <span class="badge badge-secondary">已转让</span>
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <div class="detail-card">
+                <h2>区块链信息</h2>
+                <div class="info-group">
+                    <label>区块哈希:</label>
+                    <span class="hash-value">{{ product['block_hash'] }}</span>
+                </div>
+                <div class="info-group">
+                    <label>注册时间:</label>
+                    <span>{{ product['created_at'] }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="records-section">
+            <h2>产品事件记录</h2>
+            {% if events %}
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>时间</th>
+                                <th>事件类型</th>
+                                <th>操作人</th>
+                                <th>位置</th>
+                                <th>详情</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for event in events %}
+                            <tr>
+                                <td>{{ event['timestamp'] }}</td>
+                                <td>
+                                    {% if event['type'] == 'register' %}
+                                        <span class="badge badge-success">注册</span>
+                                    {% elif event['type'] == 'transfer' %}
+                                        <span class="badge badge-primary">转移</span>
+                                    {% elif event['type'] == 'quality_check' %}
+                                        <span class="badge badge-info">质检</span>
+                                    {% elif event['type'] == 'logistics' %}
+                                        <span class="badge badge-warning">物流</span>
+                                    {% else %}
+                                        <span class="badge badge-secondary">{{ event['type'] }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if event.get('from_username') %}
+                                        {{ event.get('from_username') }}
+                                    {% elif event.get('to_username') %}
+                                        {{ event.get('to_username') }}
+                                    {% else %}
+                                        系统
+                                    {% endif %}
+                                </td>
+                                <td>{{ event['location'] or '-' }}</td>
+                                <td>
+                                    <small>{{ event['details'] }}</small>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <p>暂无事件记录</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- 快速添加质检 -->
+        <div class="records-section">
+            <h2>快速添加质检</h2>
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('manufacturer.quality_check') }}">
+                        <input type="hidden" name="product_id" value="{{ product['product_id'] }}">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="result" class="form-label">质检结果 *</label>
+                                <select class="form-select" id="result" name="result" required>
+                                    <option value="">请选择</option>
+                                    <option value="合格">合格</option>
+                                    <option value="不合格">不合格</option>
+                                    <option value="需改进">需改进</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="notes" class="form-label">质检说明</label>
+                                <input type="text" class="form-control" id="notes" name="notes" placeholder="输入质检说明（可选）">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-plus"></i> 添加质检记录
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}合规报告 - 监管者{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-file-alt"></i> 合规报告</h2>
+            <p class="text-muted">生成时间: {{ report.timestamp }}</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">报告摘要</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center p-3 border-right">
+                                <h6>合规状态</h6>
+                                {% if report.compliance_status == 'PASS' %}
+                                    <span class="badge badge-success" style="font-size: 1.2em; padding: 0.5em 1em;">
+                                        <i class="fas fa-check-circle"></i> PASS
+                                    </span>
+                                {% else %}
+                                    <span class="badge badge-danger" style="font-size: 1.2em; padding: 0.5em 1em;">
+                                        <i class="fas fa-times-circle"></i> FAIL
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3 border-right">
+                                <h6>总产品数</h6>
+                                <p style="font-size: 1.5em; font-weight: bold;">{{ report.total_products }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3 border-right">
+                                <h6>总事件数</h6>
+                                <p style="font-size: 1.5em; font-weight: bold;">{{ report.total_events }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3">
+                                <h6>区块链状态</h6>
+                                {% if report.blockchain_valid %}
+                                    <span class="badge badge-success">有效</span>
+                                {% else %}
+                                    <span class="badge badge-danger">无效</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">事件统计</h5>
+                </div>
+                <div class="card-body">
+                    {% if report.events_summary %}
+                        <table class="table table-borderless">
+                            {% for event_type, count in report.events_summary.items() %}
+                            <tr>
+                                <th width="50%">{{ event_type }}</th>
+                                <td><span class="badge badge-primary">{{ count }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </table>
+                    {% else %}
+                        <div class="alert alert-info">暂无事件数据</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <a href="{{ url_for('regulator.dashboard') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> 返回仪表板
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

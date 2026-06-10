@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}产品召回 - 制造商{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-exclamation-triangle"></i> 产品召回管理</h2>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="fas fa-plus"></i> 创建产品召回</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="product_id" class="form-label">产品</label>
+                            <select class="form-select" id="product_id" name="product_id">
+                                <option value="">-- 选择产品 --</option>
+                                {% for product in products %}
+                                <option value="{{ product['product_id'] }}">
+                                    {{ product['name'] }} ({{ product['batch_number'] }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="reason" class="form-label">召回原因 *</label>
+                            <textarea class="form-control" id="reason" name="reason" rows="3" required
+                                      placeholder="说明产品问题原因"></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="severity" class="form-label">严重级别</label>
+                            <select class="form-select" id="severity" name="severity">
+                                <option value="low">低</option>
+                                <option value="medium" selected>中</option>
+                                <option value="high">高</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-danger w-100">
+                            <i class="fas fa-exclamation-triangle"></i> 发起召回
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0"><i class="fas fa-history"></i> 活跃召回 ({{ recalls|length }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if recalls %}
+                        <div class="list-group">
+                            {% for recall in recalls %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">召回 #{{ recall['id'] }}</h6>
+                                        <p class="mb-1"><small>{{ recall['reason'] }}</small></p>
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar"></i> {{ recall['created_at'] }}
+                                        </small>
+                                    </div>
+                                    <span class="badge
+                                        {% if recall['severity'] == 'high' %}bg-danger
+                                        {% elif recall['severity'] == 'medium' %}bg-warning
+                                        {% else %}bg-info{% endif %}">
+                                        {{ recall['severity'].upper() }}
+                                    </span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> 暂无活跃召回
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-book"></i> 召回说明</h5>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li>创建召回后，所有持有该产品的消费者将被通知</li>
+                        <li>消费者可以在通知中心查看产品召回信息</li>
+                        <li>召回信息将记录在区块链中</li>
+                        <li>您可以随时更新召回状态</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>消费者仪表板 - 产品溯源系统</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/consumer.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">产品溯源区块链系统</div>
+        <div class="nav-menu">
+            <a href="{{ url_for('consumer.dashboard') }}" class="active">我的查询</a>
+            <a href="{{ url_for('consumer.query') }}">产品查询</a>
+            <a href="{{ url_for('consumer.verify') }}">真伪验证</a>
+            {% if unread_count > 0 %}
+            <a href="{{ url_for('consumer.notifications') }}" style="color: #ff6b6b;">
+                <i class="fas fa-bell"></i> 通知 ({{ unread_count }})
+            </a>
+            {% else %}
+            <a href="{{ url_for('consumer.notifications') }}">
+                <i class="fas fa-bell"></i> 通知
+            </a>
+            {% endif %}
+            <a href="{{ url_for('consumer.recalls') }}">
+                <i class="fas fa-exclamation-triangle"></i> 召回警告
+            </a>
+            <a href="{{ url_for('blockchain_explorer') }}">区块链浏览器</a>
+            <a href="{{ url_for('auth.logout') }}">退出登录</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="dashboard-header">
+            <h1>消费者仪表板</h1>
+            <p class="user-info">欢迎，{{ current_user['username'] }}</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>查询次数</h3>
+                <p class="stat-number">{{ query_count }}</p>
+            </div>
+            <div class="stat-card">
+                <h3>验证次数</h3>
+                <p class="stat-number">{{ verification_count }}</p>
+            </div>
+            <div class="stat-card">
+                <h3>追溯记录</h3>
+                <p class="stat-number">{{ trace_count }}</p>
+            </div>
+            <div class="stat-card">
+                <h3>区块链区块数</h3>
+                <p class="stat-number">{{ blockchain_height }}</p>
+            </div>
+        </div>
+
+        <div class="quick-actions">
+            <h2>快速操作</h2>
+            <div class="action-cards">
+                <a href="{{ url_for('consumer.query') }}" class="action-card">
+                    <div class="action-icon">🔍</div>
+                    <h3>产品查询</h3>
+                    <p>通过产品ID或批次号查询产品信息</p>
+                </a>
+                <a href="{{ url_for('consumer.verify') }}" class="action-card">
+                    <div class="action-icon">✓</div>
+                    <h3>真伪验证</h3>
+                    <p>验证产品的真实性和完整性</p>
+                </a>
+                <a href="{{ url_for('consumer.trace') }}" class="action-card">
+                    <div class="action-icon">📍</div>
+                    <h3>产品追溯</h3>
+                    <p>查看产品的完整溯源信息</p>
+                </a>
+                <a href="{{ url_for('consumer.favorites') }}" class="action-card">
+                    <div class="action-icon">❤️</div>
+                    <h3>我的收藏</h3>
+                    <p>管理您收藏的产品列表</p>
+                </a>
+                <a href="{{ url_for('consumer.watches') }}" class="action-card">
+                    <div class="action-icon">👁️</div>
+                    <h3>我的关注</h3>
+                    <p>查看关注的产品动态更新</p>
+                </a>
+                <a href="{{ url_for('consumer.compare') }}" class="action-card">
+                    <div class="action-icon">⚖️</div>
+                    <h3>产品对比</h3>
+                    <p>对比多个产品的溯源信息</p>
+                </a>
+            </div>
+        </div>
+
+        <div class="history-section">
+            <h2>我的产品</h2>
+            {% if my_products %}
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>产品名称</th>
+                                <th>批次号</th>
+                                <th>生产商</th>
+                                <th>生产日期</th>
+                                <th>获得时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in my_products %}
+                            <tr>
+                                <td>{{ product['name'] }}</td>
+                                <td>{{ product['batch_number'] }}</td>
+                                <td>{{ product['manufacturer_company'] or product['manufacturer_name'] }}</td>
+                                <td>{{ product['production_date'] }}</td>
+                                <td>{{ product['created_at'] }}</td>
+                                <td>
+                                    <a href="{{ url_for('consumer.trace_result', product_id=product['product_id']) }}" class="btn btn-sm btn-primary">查看溯源</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <p>暂无持有产品</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="history-section">
+            <h2>最近查询记录</h2>
+            {% if recent_queries %}
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>查询时间</th>
+                                <th>产品ID</th>
+                                <th>产品名称</th>
+                                <th>查询类型</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for query in recent_queries %}
+                            <tr>
+                                <td>{{ query['created_at'] }}</td>
+                                <td>{{ query['product_id'] }}</td>
+                                <td>{{ query['product_name'] }}</td>
+                                <td>
+                                    <span class="badge badge-info">{{ query['query_type'] }}</span>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('consumer.trace_result', product_id=query['product_id']) }}" class="btn btn-sm btn-primary">查看详情</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <p>暂无查询记录</p>
+                    <a href="{{ url_for('consumer.query') }}" class="btn btn-primary">开始查询</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/consumer.js') }}"></script>
+</body>
+</html>

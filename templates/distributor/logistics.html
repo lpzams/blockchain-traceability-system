@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}添加物流信息 - 经销商{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header bg-warning text-white">
+                <h4 class="mb-0"><i class="fas fa-truck"></i> 添加物流信息</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('distributor.logistics') }}">
+                    <div class="mb-3">
+                        <label for="product_id" class="form-label">选择产品</label>
+                        <select class="form-select" id="product_id" name="product_id" required>
+                            <option value="">请选择产品</option>
+                            {% for product in products %}
+                                <option value="{{ product['product_id'] }}">
+                                    {{ product['name'] }} - {{ product['batch_number'] }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="location" class="form-label">当前位置</label>
+                        <input type="text" class="form-control" id="location" name="location" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="status" class="form-label">物流状态</label>
+                        <select class="form-select" id="status" name="status" required>
+                            <option value="">请选择</option>
+                            <option value="已入库">已入库</option>
+                            <option value="运输中">运输中</option>
+                            <option value="已到达">已到达</option>
+                            <option value="配送中">配送中</option>
+                            <option value="已签收">已签收</option>
+                        </select>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-save"></i> 提交物流信息
+                        </button>
+                        <a href="{{ url_for('distributor.dashboard') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> 返回
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

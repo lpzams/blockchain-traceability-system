@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>监管者仪表板 - 产品溯源系统</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">产品溯源区块链系统</div>
+        <div class="nav-menu">
+            <a href="{{ url_for('regulator.dashboard') }}" class="active">监管概览</a>
+            <a href="{{ url_for('regulator.audit_trail') }}">审计追踪</a>
+            <a href="{{ url_for('blockchain_explorer') }}">区块链浏览器</a>
+            <a href="{{ url_for('auth.logout') }}">退出登录</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="dashboard-header">
+            <h1>监管者仪表板</h1>
+            <p class="user-info">欢迎，{{ current_user['username'] }} ({{ current_user['company_name'] }})</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>系统总产品数</h3>
+                <p class="stat-number">{{ total_products }}</p>
+            </div>
+            <div class="stat-card">
+                <h3>注册企业数</h3>
+                <p class="stat-number">{{ total_companies }}</p>
+            </div>
+            <div class="stat-card">
+                <h3>质量检测记录</h3>
+                <p class="stat-number">{{ total_quality_checks }}</p>
+            </div>
+            <div class="stat-card">
+                <h3>区块链区块数</h3>
+                <p class="stat-number">{{ blockchain_height }}</p>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>生产商数量</h3>
+                <p class="stat-number">{{ manufacturer_count }}</p>
+            </div>
+            <div class="stat-card">
+                <h3>经销商数量</h3>
+                <p class="stat-number">{{ distributor_count }}</p>
+            </div>
+            <div class="stat-card">
+                <h3>消费者数量</h3>
+                <p class="stat-number">{{ consumer_count }}</p>
+            </div>
+            <div class="stat-card">
+                <h3>所有权转移次数</h3>
+                <p class="stat-number">{{ total_transfers }}</p>
+            </div>
+        </div>
+
+        <div class="products-section">
+            <h2>最近注册产品</h2>
+            {% if recent_products %}
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>产品ID</th>
+                                <th>产品名称</th>
+                                <th>批次号</th>
+                                <th>生产日期</th>
+                                <th>生产商</th>
+                                <th>当前所有者</th>
+                                <th>注册时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in recent_products %}
+                            <tr>
+                                <td>{{ product['product_id'] }}</td>
+                                <td>{{ product['name'] }}</td>
+                                <td>{{ product['batch_number'] }}</td>
+                                <td>{{ product['production_date'] }}</td>
+                                <td>{{ product['manufacturer_name'] }}</td>
+                                <td>{{ product['owner_name'] }}</td>
+                                <td>{{ product['created_at'] }}</td>
+                                <td>
+                                    <a href="{{ url_for('regulator.product_detail', product_id=product['product_id']) }}" class="btn btn-sm btn-primary">查看详情</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <p>暂无产品记录</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="products-section">
+            <h2>质量检测统计</h2>
+            <div class="stats-row">
+                <div class="stat-item">
+                    <span class="stat-label">合格产品:</span>
+                    <span class="stat-value badge badge-success">{{ passed_products }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">不合格产品:</span>
+                    <span class="stat-value badge badge-danger">{{ failed_products }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">合格率:</span>
+                    <span class="stat-value badge badge-info">{{ pass_rate }}%</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="products-section">
+            <h2>最近审计活动</h2>
+            {% if recent_audits %}
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>时间</th>
+                                <th>活动类型</th>
+                                <th>相关产品</th>
+                                <th>操作者</th>
+                                <th>详情</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for audit in recent_audits %}
+                            <tr>
+                                <td>{{ audit.timestamp }}</td>
+                                <td>
+                                    <span class="badge badge-info">{{ audit.activity_type }}</span>
+                                </td>
+                                <td>{{ audit.product_name }}</td>
+                                <td>{{ audit.actor }}</td>
+                                <td>{{ audit.description }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <p>暂无审计记录</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

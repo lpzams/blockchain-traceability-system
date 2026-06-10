@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}区块链信息 - 监管者{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-cube"></i> 区块链信息</h2>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">区块链完整性检查</h5>
+                </div>
+                <div class="card-body">
+                    {% if integrity %}
+                        <table class="table table-borderless">
+                            <tr>
+                                <th width="30%">验证状态:</th>
+                                <td>
+                                    {% if integrity.valid %}
+                                        <span class="badge badge-success"><i class="fas fa-check"></i> 有效</span>
+                                    {% else %}
+                                        <span class="badge badge-danger"><i class="fas fa-times"></i> 无效</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>区块总数:</th>
+                                <td>{{ integrity.total_blocks or '未知' }}</td>
+                            </tr>
+                            <tr>
+                                <th>验证详情:</th>
+                                <td>{{ integrity.message or '无详细信息' }}</td>
+                            </tr>
+                        </table>
+                    {% else %}
+                        <div class="alert alert-info">暂无数据</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">操作</h5>
+                </div>
+                <div class="card-body">
+                    <a href="{{ url_for('regulator.dashboard') }}" class="btn btn-secondary w-100">
+                        <i class="fas fa-arrow-left"></i> 返回仪表板
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

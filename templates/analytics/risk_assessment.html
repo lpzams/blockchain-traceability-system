@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}产品风险评估{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-exclamation-triangle"></i> 产品风险评估</h2>
+            <p class="text-muted">基于供应链复杂度和交易历史的多维度风险分析</p>
+        </div>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-danger">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar"></i> 风险评估汇总</h5>
+                </div>
+                <div class="card-body">
+                    {% if assessments %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>产品名称</th>
+                                        <th>产品ID</th>
+                                        <th>风险得分</th>
+                                        <th>风险等级</th>
+                                        <th>交易数</th>
+                                        <th>产品年龄(天)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for assessment in assessments %}
+                                    <tr>
+                                        <td>{{ assessment.product_name }}</td>
+                                        <td><code>{{ assessment.product_id[:16] }}...</code></td>
+                                        <td>
+                                            <div class="progress" style="height: 20px;">
+                                                <div class="progress-bar {% if assessment.risk_color == 'success' %}bg-success{% elif assessment.risk_color == 'warning' %}bg-warning{% else %}bg-danger{% endif %}"
+                                                     role="progressbar"
+                                                     style="width: {{ assessment.risk_score }}%"
+                                                     aria-valuenow="{{ assessment.risk_score }}"
+                                                     aria-valuemin="0"
+                                                     aria-valuemax="100">
+                                                    {{ assessment.risk_score }}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ assessment.risk_color }}">
+                                                {{ assessment.risk_level }}
+                                            </span>
+                                        </td>
+                                        <td>{{ assessment.event_count }}</td>
+                                        <td>{{ assessment.age_days }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-inbox"></i> 暂无产品数据
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 风险分布统计 -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-pie-chart"></i> 风险等级分布</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="riskChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> 风险分析说明</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-3">
+                            <span class="badge bg-success me-2">低风险</span>
+                            <small>产品风险得分 < 30，供应链简单，交易历史清晰</small>
+                        </li>
+                        <li class="mb-3">
+                            <span class="badge bg-warning me-2">中风险</span>
+                            <small>产品风险得分 30-60，中等供应链复杂度</small>
+                        </li>
+                        <li class="mb-3">
+                            <span class="badge bg-danger me-2">高风险</span>
+                            <small>产品风险得分 > 60，复杂供应链或新产品，需特别关注</small>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> 返回首页
+        </a>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 计算风险分布
+    const assessments = {{ assessments | tojson }};
+    const lowRisk = assessments.filter(a => a.risk_score < 30).length;
+    const mediumRisk = assessments.filter(a => a.risk_score >= 30 && a.risk_score < 60).length;
+    const highRisk = assessments.filter(a => a.risk_score >= 60).length;
+
+    const ctx = document.getElementById('riskChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['低风险', '中风险', '高风险'],
+            datasets: [{
+                data: [lowRisk, mediumRisk, highRisk],
+                backgroundColor: [
+                    '#198754',  // green
+                    '#ffc107',  // yellow
+                    '#dc3545'   // red
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

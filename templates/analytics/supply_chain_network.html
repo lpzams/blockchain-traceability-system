@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block title %}供应链网络分析{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-project-diagram"></i> 供应链网络分析</h2>
+            <p class="text-muted">可视化展示供应链参与方和交互关系</p>
+        </div>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-danger">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-network"></i> 供应链网络拓扑图</h5>
+                </div>
+                <div class="card-body" style="height: 600px;">
+                    <div id="network" style="width: 100%; height: 100%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 网络统计 -->
+    <div class="row mt-4 g-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h6 class="text-muted">参与方数量</h6>
+                    <h3 class="text-primary">{{ network.node_count }}</h3>
+                    <small class="text-muted">节点</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h6 class="text-muted">交互关系</h6>
+                    <h3 class="text-success">{{ network.edge_count }}</h3>
+                    <small class="text-muted">边</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h6 class="text-muted">网络密度</h6>
+                    <h3 class="text-info">
+                        {% if network.node_count > 1 %}
+                            {{ "%.2f"|format((network.edge_count * 2) / (network.node_count * (network.node_count - 1)) * 100) }}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    </h3>
+                    <small class="text-muted">连接度</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h6 class="text-muted">平均度数</h6>
+                    <h3 class="text-warning">
+                        {% if network.node_count > 0 %}
+                            {{ "%.1f"|format((network.edge_count * 2) / network.node_count) }}
+                        {% else %}
+                            0
+                        {% endif %}
+                    </h3>
+                    <small class="text-muted">连接数</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 节点信息 -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-users"></i> 参与方信息</h5>
+                </div>
+                <div class="card-body">
+                    {% if network.nodes %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>参与方</th>
+                                    <th>角色</th>
+                                    <th>公司/组织</th>
+                                    <th>节点ID</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for node in network.nodes %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-primary">{{ node.label }}</span>
+                                    </td>
+                                    <td>
+                                        {% if node.role == 'manufacturer' %}
+                                            <span class="badge bg-info">生产商</span>
+                                        {% elif node.role == 'distributor' %}
+                                            <span class="badge bg-success">经销商</span>
+                                        {% elif node.role == 'consumer' %}
+                                            <span class="badge bg-warning">消费者</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ node.role }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ node.company }}</td>
+                                    <td><code>{{ node.id }}</code></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-inbox"></i> 暂无网络数据
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> 返回
+        </a>
+    </div>
+</div>
+
+<!-- Vis.js库用于网络图可视化 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet" type="text/css" />
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const nodesData = {{ network.nodes | tojson }};
+    const edgesData = {{ network.edges | tojson }};
+
+    // 构建 vis.js 格式的数据
+    const nodes = new vis.DataSet(nodesData.map(node => ({
+        id: node.id,
+        label: node.label,
+        title: `${node.label} (${node.role})<br>${node.company}`,
+        color: {
+            background: node.role === 'manufacturer' ? '#0d6efd' :
+                       node.role === 'distributor' ? '#198754' :
+                       node.role === 'consumer' ? '#ffc107' : '#6c757d'
+        },
+        font: { size: 14 },
+        shape: 'dot'
+    })));
+
+    const edges = new vis.DataSet(edgesData.map(edge => ({
+        from: edge.source,
+        to: edge.target,
+        width: Math.min(5, edge.weight),
+        arrows: 'to',
+        title: `${edge.weight} 次交互`
+    })));
+
+    const container = document.getElementById('network');
+    const data = {
+        nodes: nodes,
+        edges: edges
+    };
+
+    const options = {
+        physics: {
+            enabled: true,
+            barnesHut: {
+                gravitationalConstant: -26000,
+                centralGravity: 0.005,
+                springLength: 200,
+                springConstant: 0.18
+            }
+        },
+        interaction: {
+            hover: true,
+            navigationButtons: true,
+            keyboard: true,
+            zoomView: true,
+            dragView: true
+        },
+        nodes: {
+            borderWidthSelected: 3
+        }
+    };
+
+    const network = new vis.Network(container, data, options);
+
+    // 点击节点显示详细信息
+    network.on("click", function(params) {
+        if (params.nodes.length > 0) {
+            const nodeId = params.nodes[0];
+            const node = nodesData.find(n => n.id === nodeId);
+            alert(`节点: ${node.label}\n角色: ${node.role}\n公司: ${node.company}`);
+        }
+    });
+});
+</script>
+
+<style>
+    #network {
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+
+    .vis-network {
+        border: none;
+    }
+</style>
+{% endblock %}

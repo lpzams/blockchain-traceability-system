@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}系统监控 - 管理员{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-cogs"></i> 系统监控</h2>
+        </div>
+    </div>
+
+    <!-- 系统统计 -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h6 class="text-muted mb-2">区块链高度</h6>
+                    <h3 class="mb-0">{{ blockchain_height }}</h3>
+                    <small class="text-muted">总区块数</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h6 class="text-muted mb-2">总事件数</h6>
+                    <h3 class="mb-0">{{ total_events }}</h3>
+                    <small class="text-muted">已记录事件</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h6 class="text-muted mb-2">24小时通知</h6>
+                    <h3 class="mb-0">{{ notifications_24h }}</h3>
+                    <small class="text-muted">发送通知数</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h6 class="text-muted mb-2">总块数</h6>
+                    <h3 class="mb-0">{{ total_blocks }}</h3>
+                    <small class="text-muted">已保存块</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 系统信息 -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> 系统信息</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-3">区块链状态</dt>
+                        <dd class="col-sm-9">
+                            <span class="badge bg-success">
+                                <i class="fas fa-check-circle"></i> 正常运行
+                            </span>
+                        </dd>
+
+                        <dt class="col-sm-3">数据库连接</dt>
+                        <dd class="col-sm-9">
+                            <span class="badge bg-success">
+                                <i class="fas fa-check-circle"></i> 已连接
+                            </span>
+                        </dd>
+
+                        <dt class="col-sm-3">消息队列</dt>
+                        <dd class="col-sm-9">
+                            <span class="badge bg-info">
+                                <i class="fas fa-hourglass"></i> 内存队列
+                            </span>
+                        </dd>
+
+                        <dt class="col-sm-3">通知系统</dt>
+                        <dd class="col-sm-9">
+                            <span class="badge bg-success">
+                                <i class="fas fa-check-circle"></i> 已启用
+                            </span>
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> 返回仪表板
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的关注 - 消费者</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .watches-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        .watches-header {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .watches-header h1 {
+            margin: 0 0 10px 0;
+            font-size: 28px;
+        }
+
+        .watches-content {
+            padding: 30px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+
+        .empty-state p {
+            margin: 0 0 20px 0;
+        }
+
+        .btn-primary {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(250, 112, 154, 0.4);
+        }
+
+        .watches-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .watch-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .watch-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border-color: #fa709a;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin: 0;
+            flex: 1;
+        }
+
+        .unwatch-btn {
+            background: none;
+            border: none;
+            color: #dc3545;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px;
+            transition: all 0.2s;
+        }
+
+        .unwatch-btn:hover {
+            transform: scale(1.2);
+        }
+
+        .card-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .meta-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .meta-icon {
+            width: 20px;
+        }
+
+        .notification-settings {
+            background: #fff;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+        }
+
+        .notification-settings-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .notification-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .notification-option:last-child {
+            margin-bottom: 0;
+        }
+
+        .notification-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            background: #28a745;
+            color: white;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .notification-badge.off {
+            background: #6c757d;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-action {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            text-align: center;
+            display: inline-block;
+        }
+
+        .btn-trace {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-trace:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .watched-date {
+            color: #999;
+            font-size: 12px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .stats-bar {
+            background: white;
+            padding: 20px 30px;
+            border-bottom: 2px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #fa709a;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .back-link {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .back-link a {
+            color: #fa709a;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .watches-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div style="max-width: 1200px; margin: 0 auto 20px;">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}" style="padding: 15px; border-radius: 8px; margin-bottom: 10px; background: {% if category == 'success' %}#d4edda{% elif category == 'danger' %}#f8d7da{% else %}#fff3cd{% endif %}; border: 1px solid {% if category == 'success' %}#c3e6cb{% elif category == 'danger' %}#f5c6cb{% else %}#ffeeba{% endif %};">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <div class="watches-container">
+        <div class="watches-header">
+            <h1>👁️ 我的关注</h1>
+            <p>关注产品动态，第一时间获取更新通知</p>
+        </div>
+
+        {% if watches|length > 0 %}
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-value">{{ watches|length }}</div>
+                <div class="stat-label">关注产品</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">{{ watches|selectattr('notify_on_transfer')|list|length }}</div>
+                <div class="stat-label">流转通知</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">{{ watches|selectattr('notify_on_quality_check')|list|length }}</div>
+                <div class="stat-label">质检通知</div>
+            </div>
+        </div>
+
+        <div class="watches-content">
+            <div class="watches-grid">
+                {% for watch in watches %}
+                <div class="watch-card" data-product-id="{{ watch['product_id'] }}">
+                    <div class="card-header">
+                        <h3 class="card-title">{{ watch['name'] }}</h3>
+                        <button class="unwatch-btn" onclick="removeWatch('{{ watch['product_id'] }}')" title="取消关注">
+                            👁️
+                        </button>
+                    </div>
+
+                    <div class="card-meta">
+                        <div class="meta-row">
+                            <span class="meta-icon">🏷️</span>
+                            <span>批次: {{ watch['batch_number'] }}</span>
+                        </div>
+                        <div class="meta-row">
+                            <span class="meta-icon">🏭</span>
+                            <span>{{ watch['manufacturer_company'] or watch['manufacturer_name'] }}</span>
+                        </div>
+                        <div class="meta-row">
+                            <span class="meta-icon">📅</span>
+                            <span>生产: {{ watch['production_date'] }}</span>
+                        </div>
+                        <div class="meta-row">
+                            <span class="meta-icon">🔖</span>
+                            <span style="font-size: 11px; font-family: monospace;">{{ watch['product_id'][:24] }}...</span>
+                        </div>
+                    </div>
+
+                    <div class="notification-settings">
+                        <div class="notification-settings-title">📬 通知设置</div>
+                        <div class="notification-option">
+                            <span>流转更新:</span>
+                            <span class="notification-badge {% if not watch['notify_on_transfer'] %}off{% endif %}">
+                                {{ '开启' if watch['notify_on_transfer'] else '关闭' }}
+                            </span>
+                        </div>
+                        <div class="notification-option">
+                            <span>质检结果:</span>
+                            <span class="notification-badge {% if not watch['notify_on_quality_check'] %}off{% endif %}">
+                                {{ '开启' if watch['notify_on_quality_check'] else '关闭' }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="card-actions">
+                        <a href="{{ url_for('consumer.trace_result', product_id=watch['product_id']) }}" class="btn-action btn-trace">
+                            查看溯源
+                        </a>
+                    </div>
+
+                    <div class="watched-date">
+                        关注于 {{ watch['watched_at'][:10] }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
+        <div class="watches-content">
+            <div class="empty-state">
+                <div class="empty-state-icon">👀</div>
+                <h3>还没有关注任何产品</h3>
+                <p>关注产品后，您将收到该产品的流转更新和质检通知</p>
+                <a href="{{ url_for('consumer.query') }}" class="btn-primary">开始查询产品</a>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="back-link">
+            <a href="{{ url_for('consumer.dashboard') }}">← 返回控制台</a>
+        </div>
+    </div>
+
+    <script>
+        function removeWatch(productId) {
+            if (!confirm('确定要取消关注这个产品吗？')) {
+                return;
+            }
+
+            fetch(`/consumer/api/watch/${productId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // 移除卡片
+                    const card = document.querySelector(`[data-product-id="${productId}"]`);
+                    card.style.transition = 'all 0.3s';
+                    card.style.opacity = '0';
+                    card.style.transform = 'scale(0.8)';
+
+                    setTimeout(() => {
+                        card.remove();
+
+                        // 检查是否还有关注
+                        const remainingCards = document.querySelectorAll('.watch-card');
+                        if (remainingCards.length === 0) {
+                            location.reload();
+                        }
+                    }, 300);
+                } else {
+                    alert('操作失败: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('操作失败，请稍后重试');
+            });
+        }
+    </script>
+</body>
+</html>

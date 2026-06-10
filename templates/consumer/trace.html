@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block title %}产品追溯{% endblock %}
+
+{% block content %}
+<div class="row mb-4 fade-in">
+    <div class="col-md-12">
+        <div class="glass-card">
+            <h2 class="text-gradient mb-2">
+                <i class="fas fa-search"></i> 产品追溯查询
+            </h2>
+            <p class="text-muted mb-0">通过区块链技术验证产品真伪并查看完整流转历史</p>
+        </div>
+    </div>
+</div>
+
+<!-- 查询表单 -->
+<div class="row mb-4">
+    <div class="col-md-8 mx-auto">
+        <div class="card fade-in" style="animation-delay: 0.2s">
+            <div class="card-header">
+                <i class="fas fa-keyboard"></i> 输入产品信息
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('consumer.trace') }}" id="traceForm">
+                    <div class="mb-3">
+                        <label for="product_id" class="form-label">
+                            <i class="fas fa-barcode"></i> 产品ID或批次号
+                        </label>
+                        <input type="text"
+                               id="product_id"
+                               name="product_id"
+                               class="form-control form-control-lg"
+                               placeholder="请输入产品ID或批次号（例如：PROD001 或 001）"
+                               required>
+                        <div class="form-text">产品ID或批次号通常可以在产品包装或标签上找到</div>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-search"></i> 开始追溯
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if product %}
+<!-- 验证状态横幅 -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="alert {% if product.is_authentic %}alert-success{% else %}alert-danger{% endif %} fade-in" style="animation-delay: 0.3s">
+            <div class="d-flex align-items-center">
+                <div class="flex-shrink-0">
+                    {% if product.is_authentic %}
+                        <i class="fas fa-shield-check fa-3x"></i>
+                    {% else %}
+                        <i class="fas fa-shield-times fa-3x"></i>
+                    {% endif %}
+                </div>
+                <div class="flex-grow-1 ms-3">
+                    <h4 class="alert-heading mb-2">
+                        {% if product.is_authentic %}
+                            <i class="fas fa-check-circle"></i> 区块链验证通过
+                        {% else %}
+                            <i class="fas fa-exclamation-triangle"></i> 验证失败
+                        {% endif %}
+                    </h4>
+                    <p class="mb-0">
+                        {% if product.is_authentic %}
+                            该产品已在区块链上注册，信息真实可信
+                        {% else %}
+                            产品信息验证失败，请谨慎购买
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 产品详情 -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card fade-in" style="animation-delay: 0.4s">
+            <div class="card-header">
+                <i class="fas fa-info-circle"></i> 产品基本信息
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <th width="35%"><i class="fas fa-hashtag text-muted"></i> 产品ID</th>
+                        <td><code class="hash-text">{{ product['product']['id'] }}</code></td>
+                    </tr>
+                    <tr>
+                        <th><i class="fas fa-tag text-muted"></i> 产品名称</th>
+                        <td><strong>{{ product['product']['name'] }}</strong></td>
+                    </tr>
+                    <tr>
+                        <th><i class="fas fa-barcode text-muted"></i> 批次号</th>
+                        <td>{{ product['product']['batch_number'] }}</td>
+                    </tr>
+                    <tr>
+                        <th><i class="fas fa-calendar text-muted"></i> 生产日期</th>
+                        <td>{{ product['product']['production_date'] }}</td>
+                    </tr>
+                    <tr>
+                        <th><i class="fas fa-industry text-muted"></i> 生产商</th>
+                        <td>
+                            <span class="badge badge-primary">{{ product['product']['manufacturer_company'] }}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><i class="fas fa-user text-muted"></i> 当前所有者</th>
+                        <td>
+                            <span class="badge badge-info">{{ product['product']['current_owner_company'] }}</span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card fade-in" style="animation-delay: 0.5s">
+            <div class="card-header">
+                <i class="fas fa-shield-alt"></i> 区块链验证信息
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <th width="35%"><i class="fas fa-check-circle text-muted"></i> 验证状态</th>
+                        <td>
+                            {% if product['is_authentic'] %}
+                                <span class="badge badge-success">
+                                    <i class="fas fa-check"></i> 已验证
+                                </span>
+                            {% else %}
+                                <span class="badge badge-danger">
+                                    <i class="fas fa-times"></i> 验证失败
+                                </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><i class="fas fa-align-left text-muted"></i> 验证结果</th>
+                        <td>{{ product['verification_message'] }}</td>
+                    </tr>
+                </table>
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-info-circle"></i> 产品信息已在区块链上验证
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 溯源事件时间线 -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card fade-in" style="animation-delay: 0.6s">
+            <div class="card-header">
+                <i class="fas fa-history"></i> 完整溯源链
+                <span class="badge badge-primary ms-2">{{ product['events']|length }} 条记录</span>
+            </div>
+            <div class="card-body">
+                {% if product['events'] %}
+                    <div class="timeline">
+                        {% for event in product['events'] %}
+                        <div class="timeline-item mb-4">
+                            <div class="row">
+                                <div class="col-md-2 text-end">
+                                    <small class="text-muted">{{ event['timestamp'] }}</small>
+                                </div>
+                                <div class="col-md-1 text-center">
+                                    {% if event['type'] == 'register' %}
+                                        <i class="fas fa-plus-circle fa-2x text-primary"></i>
+                                    {% elif event['type'] == 'transfer' %}
+                                        <i class="fas fa-exchange-alt fa-2x text-info"></i>
+                                    {% elif event['type'] == 'quality_check' %}
+                                        <i class="fas fa-check-circle fa-2x text-success"></i>
+                                    {% elif event['type'] == 'logistics' %}
+                                        <i class="fas fa-truck fa-2x text-warning"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-9">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h6 class="card-title">{{ event['title'] }}</h6>
+                                            <p class="card-text">{{ event['details'] }}</p>
+                                            {% if event['location'] %}<p class="text-muted"><small>位置: {{ event['location'] }}</small></p>{% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> 暂无溯源事件
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 初始化表单验证
+    if (typeof BlockchainApp !== 'undefined' && BlockchainApp.FormValidator) {
+        new BlockchainApp.FormValidator('traceForm');
+    }
+});
+</script>
+{% endblock %}

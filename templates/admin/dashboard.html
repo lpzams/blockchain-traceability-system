@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}管理员仪表板{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2><i class="fas fa-shield-alt"></i> 管理员仪表板</h2>
+                    <p class="text-muted">欢迎，{{ current_user['username'] }}</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('admin.notifications') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-bell"></i> 通知
+                        {% if unread_count > 0 %}
+                        <span class="badge bg-danger ms-1">{{ unread_count }}</span>
+                        {% endif %}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 统计卡片 -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h6 class="text-muted mb-2">总用户数</h6>
+                    <h3 class="mb-0">{{ total_users }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h6 class="text-muted mb-2">总产品数</h6>
+                    <h3 class="mb-0">{{ total_products }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h6 class="text-muted mb-2">活跃召回</h6>
+                    <h3 class="mb-0 text-danger">{{ active_recalls }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h6 class="text-muted mb-2">区块链高度</h6>
+                    <h3 class="mb-0">{{ blockchain_height }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 用户统计 -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-users"></i> 用户类型统计</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for stat in user_stats %}
+                        <div class="list-group-item d-flex justify-content-between">
+                            <span>
+                                {% if stat['role'] == 'manufacturer' %}
+                                    生产商
+                                {% elif stat['role'] == 'distributor' %}
+                                    经销商
+                                {% elif stat['role'] == 'consumer' %}
+                                    消费者
+                                {% elif stat['role'] == 'admin' %}
+                                    管理员
+                                {% elif stat['role'] == 'regulator' %}
+                                    监管者
+                                {% endif %}
+                            </span>
+                            <strong>{{ stat['count'] }}</strong>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-tasks"></i> 快速操作</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('admin.users') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-users"></i> 用户管理
+                        </a>
+                        <a href="{{ url_for('admin.products') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-box"></i> 产品管理
+                        </a>
+                        <a href="{{ url_for('admin.recalls') }}" class="btn btn-outline-danger">
+                            <i class="fas fa-exclamation-triangle"></i> 召回管理
+                        </a>
+                        <a href="{{ url_for('admin.system') }}" class="btn btn-outline-info">
+                            <i class="fas fa-cogs"></i> 系统监控
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

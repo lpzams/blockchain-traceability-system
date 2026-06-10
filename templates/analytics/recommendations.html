@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}智能推荐系统{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-lightbulb"></i> 智能推荐系统</h2>
+            <p class="text-muted">基于大数据分析的供应链优化建议</p>
+        </div>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-danger">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <!-- 推荐列表 -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h5 class="mb-3"><i class="fas fa-list"></i> 系统推荐</h5>
+            {% if recommendations %}
+                {% for rec in recommendations %}
+                <div class="card mb-3 border-{% if rec.priority == 'high' %}danger{% elif rec.priority == 'medium' %}warning{% else %}info{% endif %}">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-1 text-center">
+                                <i class="fas fa-lightbulb" style="font-size: 24px; color: #ffc107;"></i>
+                            </div>
+                            <div class="col-md-8">
+                                <h6 class="card-title">
+                                    {{ rec.type }}
+                                    <span class="badge {% if rec.priority == 'high' %}bg-danger{% elif rec.priority == 'medium' %}bg-warning{% else %}bg-info{% endif %} float-end">
+                                        {% if rec.priority == 'high' %}高优先级{% elif rec.priority == 'medium' %}中优先级{% else %}低优先级{% endif %}
+                                    </span>
+                                </h6>
+                                <p class="card-text text-muted mb-0">{{ rec.message }}</p>
+                            </div>
+                            <div class="col-md-3 text-end">
+                                <code style="font-size: 11px;">{{ rec.product_id[:16] }}...</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-check-circle"></i> 系统运行正常，暂无优化建议
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 质量风险预测 -->
+    <div class="row">
+        <div class="col-md-12">
+            <h5 class="mb-3"><i class="fas fa-crystal-ball"></i> 质量风险预测</h5>
+            {% if predictions %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead class="table-light">
+                        <tr>
+                            <th>生产商ID</th>
+                            <th>历史不合格率</th>
+                            <th>风险等级</th>
+                            <th>建议措施</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pred in predictions %}
+                        <tr>
+                            <td><code>{{ pred.manufacturer_id }}</code></td>
+                            <td>
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar bg-danger"
+                                         role="progressbar"
+                                         style="width: {{ pred.fail_rate }}%"
+                                         aria-valuenow="{{ pred.fail_rate }}"
+                                         aria-valuemin="0"
+                                         aria-valuemax="100">
+                                        {{ "%.1f"|format(pred.fail_rate) }}%
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-{% if pred.risk_level == '高风险' %}danger{% else %}warning{% endif %}">
+                                    {{ pred.risk_level }}
+                                </span>
+                            </td>
+                            <td>{{ pred.recommendation }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-inbox"></i> 暂无历史不合格记录
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 优化建议 -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <h5 class="alert-heading"><i class="fas fa-chart-line"></i> 供应链优化方向</h5>
+                <ul class="mb-0">
+                    <li><strong>智能库存：</strong>根据预测的交付时间动态调整库存水位</li>
+                    <li><strong>质量控制：</strong>对高风险供应商实施更严格的质检标准</li>
+                    <li><strong>路由优化：</strong>基于碳足迹分析优化物流路线</li>
+                    <li><strong>风险预警：</strong>对高风险产品提前建立追踪机制</li>
+                    <li><strong>供应商评级：</strong>基于多维度数据动态评估供应商表现</li>
+                </ul>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> 返回
+        </a>
+    </div>
+</div>
+{% endblock %}

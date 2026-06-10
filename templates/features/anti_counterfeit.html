@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}防伪验证系统{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <h2 class="mb-4">
+                <i class="fas fa-shield-alt"></i> 产品防伪验证系统
+            </h2>
+
+            {% if error %}
+            <div class="alert alert-danger">{{ error }}</div>
+            {% endif %}
+
+            {% if anti_code %}
+            <!-- 防伪码显示 -->
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">防伪验证码</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-4">
+                        <p class="text-muted">多层加密防伪码</p>
+                        <div class="badge bg-danger p-3" style="font-size: 18px; font-weight: bold; letter-spacing: 2px;">
+                            {{ anti_code.code }}
+                        </div>
+                    </div>
+                    <p class="text-muted small">
+                        生成时间：{{ anti_code.generated_at[:19] }}<br>
+                        产品ID：<code>{{ anti_code.product_id[:16] }}...</code>
+                    </p>
+                </div>
+            </div>
+
+            <!-- 二维码 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-qrcode"></i> 产品验证二维码</h5>
+                </div>
+                <div class="card-body text-center">
+                    {% if qr_code %}
+                    <img src="{{ qr_code }}"
+                         alt="产品二维码"
+                         style="max-width: 300px; border: 2px solid #28a745; padding: 10px;">
+                    <p class="text-muted mt-3">
+                        消费者扫描此二维码可验证产品真伪
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 验证指南 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-question-circle"></i> 消费者验证指南</h5>
+                </div>
+                <div class="card-body">
+                    <h6>方式一：防伪码验证</h6>
+                    <ol>
+                        <li>记录产品上的防伪码：<code>{{ anti_code.code }}</code></li>
+                        <li>访问验证网站：<code>{{ anti_code.verification_url }}</code></li>
+                        <li>输入防伪码进行验证</li>
+                        <li>系统返回产品真伪结果</li>
+                    </ol>
+
+                    <hr>
+
+                    <h6>方式二：二维码验证</h6>
+                    <ol>
+                        <li>使用手机扫描产品上的二维码</li>
+                        <li>自动跳转到验证页面</li>
+                        <li>系统自动识别产品信息</li>
+                        <li>显示完整的产品溯源信息</li>
+                    </ol>
+
+                    <hr>
+
+                    <h6>防伪特征说明</h6>
+                    <ul>
+                        <li><strong>多层加密：</strong>采用SHA256、SHA512、MD5多层哈希加密</li>
+                        <li><strong>唯一性：</strong>每个防伪码都是唯一的，不可复制</li>
+                        <li><strong>时间戳：</strong>防伪码包含生成时间戳，确保产品新鲜度</li>
+                        <li><strong>区块链存证：</strong>防伪码与区块链记录关联，不可篡改</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 技术说明 -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-cog"></i> 技术说明</h5>
+                </div>
+                <div class="card-body">
+                    <h6>防伪码生成算法</h6>
+                    <pre><code>产品ID + 时间戳
+    ↓
+第一层哈希 (SHA256) → Hash1[:8]
+    ↓
+第二层哈希 (SHA512 + Hash1) → Hash2[:8]
+    ↓
+第三层哈希 (MD5 + Hash2) → Hash3[:8]
+    ↓
+最终防伪码: Hash1-Hash2-Hash3</code></pre>
+
+                    <h6 class="mt-3">二维码内容</h6>
+                    <p>二维码编码了以下验证链接：</p>
+                    <code class="d-block bg-light p-2 mb-3">https://traceability.app/verify?product={{ product_id[:16] }}...</code>
+
+                    <h6>优势</h6>
+                    <ul>
+                        <li>防止仿冒品：多层加密确保无法复制</li>
+                        <li>实时验证：消费者可即时验证产品真伪</li>
+                        <li>信息追踪：验证时可获得完整的产品溯源信息</li>
+                        <li>数据分析：平台可分析防伪码的扫描数据，了解产品流向</li>
+                    </ul>
+                </div>
+            </div>
+
+            {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-inbox"></i> 请输入有效的产品ID生成防伪码
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+pre {
+    background-color: #f8f9fa;
+    padding: 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    line-height: 1.6;
+}
+</style>
+{% endblock %}

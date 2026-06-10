@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+
+{% block title %}供应链智能合约{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h2 class="mb-4">
+                <i class="fas fa-handshake"></i> 供应链智能合约系统
+            </h2>
+
+            {% if error %}
+            <div class="alert alert-danger">{{ error }}</div>
+            {% endif %}
+
+            <!-- 合约创建 -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-plus-circle"></i> 创建新合约</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="contractForm">
+                                <div class="mb-3">
+                                    <label class="form-label">选择产品：</label>
+                                    <select class="form-select" id="productId" required>
+                                        <option value="">-- 选择产品 --</option>
+                                        {% if products %}
+                                            {% for product in products %}
+                                            <option value="{{ product.product_id }}">
+                                                {{ product.name }} ({{ product.batch_number }})
+                                            </option>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">接收方ID：</label>
+                                    <input type="text" class="form-control" id="toUserId"
+                                           placeholder="输入接收方用户ID" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">交易价格：</label>
+                                    <input type="number" class="form-control" id="price"
+                                           placeholder="输入交易价格" step="0.01" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">交付期限（天）：</label>
+                                    <input type="number" class="form-control" id="deliveryDays"
+                                           placeholder="输入交付期限" min="1" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">备注：</label>
+                                    <textarea class="form-control" id="notes"
+                                              placeholder="输入合约备注信息" rows="3"></textarea>
+                                </div>
+
+                                <button type="button" class="btn btn-primary w-100" onclick="createContract()">
+                                    <i class="fas fa-file-contract"></i> 创建合约
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 合约说明 -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-info-circle"></i> 智能合约说明</h5>
+                        </div>
+                        <div class="card-body">
+                            <h6>什么是供应链智能合约？</h6>
+                            <p class="text-muted">
+                                智能合约是在区块链上自动执行的协议，可以自动验证交易条件并执行相应操作。
+                            </p>
+
+                            <h6 class="mt-3">合约特点</h6>
+                            <ul>
+                                <li><strong>自动执行：</strong>无需第三方，条件满足自动执行</li>
+                                <li><strong>透明可信：</strong>所有交易条款公开，不可篡改</li>
+                                <li><strong>所有权验证：</strong>系统自动验证产品所有权</li>
+                                <li><strong>多方协议：</strong>支持供应链各环节的合作协议</li>
+                            </ul>
+
+                            <h6 class="mt-3">合约生命周期</h6>
+                            <ol>
+                                <li><strong>创建：</strong>定义交易条款和参与方</li>
+                                <li><strong>待签：</strong>等待接收方确认</li>
+                                <li><strong>生效：</strong>双方同意，合约正式生效</li>
+                                <li><strong>执行：</strong>系统验证条件并执行</li>
+                                <li><strong>完成：</strong>交易完成，合约终止</li>
+                            </ol>
+
+                            <h6 class="mt-3">风险控制</h6>
+                            <ul>
+                                <li>自动验证交易双方的有效身份</li>
+                                <li>检查产品所有权的真实性</li>
+                                <li>记录所有交易步骤于区块链</li>
+                                <li>不可篡改的交易历史</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 技术架构 -->
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-cog"></i> 技术架构</h5>
+                        </div>
+                        <div class="card-body">
+                            <h6>合约验证流程</h6>
+                            <pre><code>1. 输入验证
+   ├─ 检查产品是否存在
+   ├─ 验证当前所有者身份
+   └─ 验证接收方身份
+
+2. 所有权检查
+   ├─ 查询产品当前所有者
+   ├─ 与合约中的发送方匹配
+   └─ 返回所有权验证结果
+
+3. 合约生成
+   ├─ 生成唯一合约ID (SHA256)
+   ├─ 计算合约校验和 (SHA256)
+   └─ 记录合约到区块链
+
+4. 自动执行
+   ├─ 所有权验证成功
+   ├─ 自动转移产品所有权
+   └─ 记录交易事件</code></pre>
+
+                            <h6 class="mt-3">数据结构</h6>
+                            <pre><code>合约对象 {
+    contract_id: string,           // 合约ID (SHA256)
+    from_user_id: string,          // 发送方ID
+    to_user_id: string,            // 接收方ID
+    product_id: string,            // 产品ID
+    terms: {                        // 交易条款
+        price: number,             // 交易价格
+        delivery_days: number,     // 交付期限
+        notes: string             // 备注信息
+    },
+    status: string,                // 合约状态 (pending/accepted/rejected/completed)
+    created_at: string,            // 创建时间
+    expires_at: string,            // 过期时间 (30天有效期)
+    checksum: string              // 合约校验和 (SHA256)
+}</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 合约实例说明 -->
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-example"></i> 真实应用场景</h5>
+                        </div>
+                        <div class="card-body">
+                            <h6>场景1：制造商→经销商</h6>
+                            <div class="bg-light p-3 rounded mb-3">
+                                <p class="mb-2">制造商张三向经销商李四销售100件产品</p>
+                                <ul class="mb-0">
+                                    <li>交易价格：5000元</li>
+                                    <li>交付期限：7天</li>
+                                    <li>备注：按期交付，质量保证</li>
+                                </ul>
+                            </div>
+
+                            <h6>场景2：经销商→零售商</h6>
+                            <div class="bg-light p-3 rounded mb-3">
+                                <p class="mb-2">经销商李四向零售商王五销售50件产品</p>
+                                <ul class="mb-0">
+                                    <li>交易价格：2500元</li>
+                                    <li>交付期限：3天</li>
+                                    <li>备注：现款现货</li>
+                                </ul>
+                            </div>
+
+                            <h6>场景3：消费者验证</h6>
+                            <div class="bg-light p-3 rounded">
+                                <p class="mb-2">消费者可以追踪整个供应链过程</p>
+                                <ul class="mb-0">
+                                    <li>查看所有权转移历史</li>
+                                    <li>验证交易的合法性</li>
+                                    <li>确保产品来源真实</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function createContract() {
+    const productId = document.getElementById('productId').value;
+    const toUserId = document.getElementById('toUserId').value;
+    const price = parseFloat(document.getElementById('price').value);
+    const deliveryDays = parseInt(document.getElementById('deliveryDays').value);
+    const notes = document.getElementById('notes').value;
+
+    if (!productId || !toUserId || !price || !deliveryDays) {
+        alert('请填写所有必填字段');
+        return;
+    }
+
+    const terms = {
+        price: price,
+        delivery_days: deliveryDays,
+        notes: notes
+    };
+
+    fetch('/features/api/smart-contract/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            product_id: productId,
+            to_user_id: toUserId,
+            terms: terms
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            alert('合约创建成功！\n合约ID: ' + data.data.contract_id);
+            document.getElementById('contractForm').reset();
+        } else {
+            alert('合约创建失败: ' + data.error);
+        }
+    })
+    .catch(err => alert('错误: ' + err));
+}
+</script>
+{% endblock %}
